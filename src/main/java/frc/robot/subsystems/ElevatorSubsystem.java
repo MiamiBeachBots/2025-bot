@@ -27,19 +27,24 @@ import frc.robot.DriveConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
   // Declare Motor
-  private final SparkMax m_Motor;
+  private final SparkMax m_elevatorMotorLeft;
+  private final SparkMax m_elevatorMotorRight;
   // Declare Simulated Motor
   private final DCMotor m_simGearbox;
-  private final SparkMaxSim m_simMotor;
+  private final SparkMaxSim m_simMotorLeft;
+  private final SparkMaxSim m_simMotorRight;
 
   // Instantiate Motor Configs
-  private final SparkMaxConfig m_MotorConfig = new SparkMaxConfig();
+  private final SparkMaxConfig m_motorConfigLeft = new SparkMaxConfig();
+  private final SparkMaxConfig m_motorConfigRight = new SparkMaxConfig();
   // Declare PID
   private final SparkClosedLoopController m_ElevatorMainPIDController;
   // Declare Encoder
-  private final RelativeEncoder m_ElevatorEncoder;
+  private final RelativeEncoder m_elevatorEncoderLeft;
+  private final RelativeEncoder m_elevatorEncoderRight;
   // Declare Simulated Encoder
-  private final SparkRelativeEncoderSim m_ElevatorEncoderSim;
+  private final SparkRelativeEncoderSim m_elevatorEncoderSimLeft;
+  private final SparkRelativeEncoderSim m_elevatorEncoderSimRight;
   // Declare Elevator Physics Engine
   private final ElevatorSim m_ElevatorSim;
 
@@ -81,14 +86,19 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public ElevatorSubsystem() {
     // Create elevator motor
-    m_Motor = new SparkMax(CANConstants.MOTOR_ELEVATOR_LEFT_ID, SparkMax.MotorType.kBrushless);
-
+    m_elevatorMotorLeft =
+        new SparkMax(CANConstants.MOTOR_ELEVATOR_LEFT_ID, SparkMax.MotorType.kBrushless);
+    m_elevatorMotorRight =
+        new SparkMax(CANConstants.MOTOR_ELEVATOR_RIGHT_ID, SparkMax.MotorType.kBrushless);
+    
     // Create Simulated Motors
-    m_simGearbox = DCMotor.getNEO(1);
-    m_simMotor = new SparkMaxSim(m_Motor, m_simGearbox);
+    m_simGearbox = DCMotor.getNEO(2);
+    m_simMotorLeft = new SparkMaxSim(m_elevatorMotorLeft, m_simGearbox);
+    m_simMotorRight = new SparkMaxSim(m_elevatorMotorRight, m_simGearbox);
 
     // Create Simulated encoder
-    m_ElevatorEncoderSim = m_simMotor.getRelativeEncoderSim();
+    m_elevatorEncoderSimLeft = m_simMotorLeft.getRelativeEncoderSim();
+    m_elevatorEncoderSimRight = m_simMotorRight.getRelativeEncoderSim();
 
     // Create Simulated Physics Engine
     m_ElevatorSim =
@@ -104,18 +114,27 @@ public class ElevatorSubsystem extends SubsystemBase {
             0.0);
 
     // Set idle mode to coast
-    m_MotorConfig.idleMode(IdleMode.kBrake);
+    m_motorConfigLeft.idleMode(IdleMode.kBrake);
+    m_motorConfigRight.idleMode(IdleMode.kBrake);
     // Set current limit
-    m_MotorConfig.smartCurrentLimit(k_CurrentLimit);
+    m_motorConfigLeft.smartCurrentLimit(k_CurrentLimit);
+    m_motorConfigRight.smartCurrentLimit(k_CurrentLimit);
+
+    // Enable follow
+    m_motorConfigRight.follow(m_elevatorMotorLeft);
 
     // Connect to built in PID controller
-    m_ElevatorMainPIDController = m_Motor.getClosedLoopController();
+    m_ElevatorMainPIDController = m_elevatorMotorLeft.getClosedLoopController();
 
     // Allow us to read the encoder
-    m_ElevatorEncoder = m_Motor.getEncoder();
+    m_elevatorEncoderLeft = m_elevatorMotorLeft.getEncoder();
+    m_elevatorEncoderRight = m_elevatorMotorRight.getEncoder();
 
-    m_MotorConfig.encoder.positionConversionFactor(kPositionConversionRatio);
-    m_MotorConfig.encoder.velocityConversionFactor(kVelocityConversionRatio);
+    // config encoders
+    m_motorConfigLeft.encoder.positionConversionFactor(kPositionConversionRatio);
+    m_motorConfigLeft.encoder.velocityConversionFactor(kVelocityConversionRatio);
+    m_motorConfigRight.encoder.positionConversionFactor(kPositionConversionRatio);
+    m_motorConfigRight.encoder.velocityConversionFactor(kVelocityConversionRatio);
 
     // PID coefficients
     kP = 0.0;
@@ -124,18 +143,21 @@ public class ElevatorSubsystem extends SubsystemBase {
     kIz = 0;
     kMaxOutput = 0.8;
     kMinOutput = -0.8;
+
     // set PID coefficients
-    m_MotorConfig.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainPositionPIDSlot);
-    m_MotorConfig.closedLoop.iZone(kIz, DriveConstants.kDrivetrainPositionPIDSlot);
-    m_MotorConfig.closedLoop.outputRange(
+    m_motorConfigLeft.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainPositionPIDSlot);
+    m_motorConfigLeft.closedLoop.iZone(kIz, DriveConstants.kDrivetrainPositionPIDSlot);
+    m_motorConfigLeft.closedLoop.outputRange(
         kMinOutput, kMaxOutput, DriveConstants.kDrivetrainPositionPIDSlot);
+
     // Smart Control Config
-    m_MotorConfig.closedLoop.maxMotion.maxVelocity(
+    m_motorConfigLeft.closedLoop.maxMotion.maxVelocity(
         kMaxVelocity, DriveConstants.kDrivetrainPositionPIDSlot);
-    m_MotorConfig.closedLoop.maxMotion.maxAcceleration(
+    m_motorConfigLeft.closedLoop.maxMotion.maxAcceleration(
         kMaxAcceleration, DriveConstants.kDrivetrainPositionPIDSlot);
-    m_MotorConfig.closedLoop.maxMotion.allowedClosedLoopError(
+    m_motorConfigLeft.closedLoop.maxMotion.allowedClosedLoopError(
         kAllowedClosedLoopError, DriveConstants.kDrivetrainPositionPIDSlot);
+
     // setup SysID for auto profiling
     m_sysIdRoutine =
         new SysIdRoutine(
@@ -145,12 +167,15 @@ public class ElevatorSubsystem extends SubsystemBase {
                 null, // No log consumer, since data is recorded by URCL
                 this));
 
-    m_Motor.configure(
-        m_MotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_elevatorMotorLeft.configure(
+        m_motorConfigLeft, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      m_elevatorMotorRight.configure(
+          m_motorConfigRight, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void setVoltage(Voltage voltage) {
-    m_Motor.setVoltage(voltage.in(Volts));
+    m_elevatorMotorLeft.setVoltage(voltage.in(Volts));
+    m_elevatorMotorRight.setVoltage(voltage.in(Volts));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -184,13 +209,13 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
     // Update the simulation of our elevator, set inputs
-    m_ElevatorSim.setInput(m_simMotor.getAppliedOutput() * RobotController.getBatteryVoltage());
+    m_ElevatorSim.setInput(m_simMotorLeft.getAppliedOutput() * RobotController.getBatteryVoltage());
 
     // update simulation (20ms)
     m_ElevatorSim.update(0.020);
 
     // Iterate PID loops
-    m_simMotor.iterate(
+    m_simMotorLeft.iterate(
         m_ElevatorSim.getVelocityMetersPerSecond(), RoboRioSim.getVInVoltage(), 0.02);
 
     // add load to battery
@@ -198,7 +223,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         BatterySim.calculateDefaultBatteryLoadedVoltage(m_ElevatorSim.getCurrentDrawAmps()));
 
     // update encoder
-    m_ElevatorEncoderSim.setPosition(m_ElevatorSim.getPositionMeters());
-    m_ElevatorEncoderSim.setVelocity(m_ElevatorSim.getVelocityMetersPerSecond());
+    m_elevatorEncoderSimLeft.setPosition(m_ElevatorSim.getPositionMeters());
+    m_elevatorEncoderSimLeft.setVelocity(m_ElevatorSim.getVelocityMetersPerSecond());
+    m_elevatorEncoderSimRight.setPosition(m_ElevatorSim.getPositionMeters());
+    m_elevatorEncoderSimRight.setVelocity(m_ElevatorSim.getVelocityMetersPerSecond());
   }
 }
