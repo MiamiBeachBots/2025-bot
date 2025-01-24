@@ -145,6 +145,7 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   public void setVoltage(Voltage voltage) {
     m_ShooterMotorMain.setVoltage(voltage.in(Volts));
+    m_ShooterMotorSecondary.setVoltage(voltage.in(Volts));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

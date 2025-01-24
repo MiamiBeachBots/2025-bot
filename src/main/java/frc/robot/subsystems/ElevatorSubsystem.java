@@ -90,7 +90,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         new SparkMax(CANConstants.MOTOR_ELEVATOR_LEFT_ID, SparkMax.MotorType.kBrushless);
     m_elevatorMotorRight =
         new SparkMax(CANConstants.MOTOR_ELEVATOR_RIGHT_ID, SparkMax.MotorType.kBrushless);
-    
+
     // Create Simulated Motors
     m_simGearbox = DCMotor.getNEO(2);
     m_simMotorLeft = new SparkMaxSim(m_elevatorMotorLeft, m_simGearbox);
@@ -169,8 +169,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     m_elevatorMotorLeft.configure(
         m_motorConfigLeft, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-      m_elevatorMotorRight.configure(
-          m_motorConfigRight, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_elevatorMotorRight.configure(
+        m_motorConfigRight, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   public void setVoltage(Voltage voltage) {
