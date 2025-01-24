@@ -21,7 +21,7 @@ public class LifterSubsystem extends SubsystemBase {
   private final DCMotor m_gearbox;
   private final SparkMaxSim m_motorSim;
   private double kCurrentSpeed = Constants.LIFTER_SPEED;
-  private int motorID;
+  private final int motorID;
 
   /** Creates a new LifterSubsystem. */
   public LifterSubsystem(int motor_ID) {

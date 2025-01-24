@@ -41,10 +41,10 @@ public class FlywheelSubsystem extends SubsystemBase {
   private final SparkMaxConfig m_SecondaryConfig = new SparkMaxConfig(); // Motor Configuration
 
   private final SparkClosedLoopController m_ShooterMainPIDController;
-  private RelativeEncoder m_ShooterMainEncoder;
-  private RelativeEncoder m_ShooterSecondaryEncoder;
-  private SparkRelativeEncoderSim m_ShooterMainEncoderSim;
-  private SparkRelativeEncoderSim m_ShooterSecondaryEncoderSim;
+  private final RelativeEncoder m_ShooterMainEncoder;
+  private final RelativeEncoder m_ShooterSecondaryEncoder;
+  private final SparkRelativeEncoderSim m_ShooterMainEncoderSim;
+  private final SparkRelativeEncoderSim m_ShooterSecondaryEncoderSim;
   private final double kP, kI, kD, kIz, kMaxOutput, kMinOutput;
   // general drive constants
   // https://www.chiefdelphi.com/t/encoders-velocity-to-m-s/390332/2
@@ -78,20 +78,28 @@ public class FlywheelSubsystem extends SubsystemBase {
         new SparkMax(CANConstants.MOTOR_SHOOTER_LEFT_ID, SparkMax.MotorType.kBrushless);
     m_ShooterMotorSecondary =
         new SparkMax(CANConstants.MOTOR_SHOOTER_RIGHT_ID, SparkMax.MotorType.kBrushless);
+
     // Create simulated motors
     m_MainGearbox = DCMotor.getNEO(1);
     m_SecondaryGearbox = DCMotor.getNEO(1);
     m_ShooterMainSim = new SparkMaxSim(m_ShooterMotorMain, m_MainGearbox);
     m_ShooterSecondarySim = new SparkMaxSim(m_ShooterMotorSecondary, m_SecondaryGearbox);
+
+    // Create simulated encoder
+    m_ShooterMainEncoderSim = m_ShooterMainSim.getRelativeEncoderSim();
+    m_ShooterSecondaryEncoderSim = m_ShooterSecondarySim.getRelativeEncoderSim();
+
     // Physics Simulation
     // TODO: Add Simulation
 
     // set the idle mode to coast
     m_MainConfig.idleMode(IdleMode.kBrake);
     m_SecondaryConfig.idleMode(IdleMode.kBrake);
+
     // set current limit
     m_MainConfig.smartCurrentLimit(k_CurrentLimit);
     m_SecondaryConfig.smartCurrentLimit(k_CurrentLimit);
+
     // config follow
     m_SecondaryConfig.follow(m_ShooterMotorMain, true);
 
@@ -101,11 +109,13 @@ public class FlywheelSubsystem extends SubsystemBase {
     // allow us to read the encoder
     m_ShooterMainEncoder = m_ShooterMotorMain.getEncoder();
     m_ShooterSecondaryEncoder = m_ShooterMotorSecondary.getEncoder();
-    // Create simulated encoder
-    m_ShooterMainEncoderSim = m_ShooterMainSim.getRelativeEncoderSim();
-    m_ShooterSecondaryEncoderSim = m_ShooterSecondarySim.getRelativeEncoderSim();
+
+    // Set Conversion Factors
     m_MainConfig.encoder.positionConversionFactor(kPositionConversionRatio);
+    m_SecondaryConfig.encoder.positionConversionFactor(kPositionConversionRatio);
     m_MainConfig.encoder.velocityConversionFactor(kVelocityConversionRatio);
+    m_SecondaryConfig.encoder.velocityConversionFactor(kVelocityConversionRatio);
+
     // PID coefficients
     kP = 0.00013373;
     kI = 0;
@@ -113,6 +123,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     kIz = 0;
     kMaxOutput = 1;
     kMinOutput = -1;
+
     // set PID coefficients
     m_MainConfig.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainVelocityPIDSlot);
     m_MainConfig.closedLoop.iZone(kIz, DriveConstants.kDrivetrainVelocityPIDSlot);

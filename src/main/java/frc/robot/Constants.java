@@ -35,17 +35,13 @@ public final class Constants {
     /// Arm Motors
     public static final int MOTOR_ARM_MAIN_ID = 41;
 
-    // Claw Motors
-    public static final int MOTOR_CLAW_EXTEND_ID = 51;
-    public static final int MOTOR_CLAW_INTAKE_ID = 52;
-
     /// Shooter Motors
-    public static final int MOTOR_SHOOTER_LEFT_ID = 61;
-    public static final int MOTOR_SHOOTER_RIGHT_ID = 62;
+    public static final int MOTOR_SHOOTER_LEFT_ID = 51;
+    public static final int MOTOR_SHOOTER_RIGHT_ID = 52;
 
     /// Lifter Motors
-    public static final int MOTOR_LIFTER_LEFT_ID = 71;
-    public static final int MOTOR_LIFTER_RIGHT_ID = 72;
+    public static final int MOTOR_LIFTER_LEFT_ID = 61;
+    public static final int MOTOR_LIFTER_RIGHT_ID = 62;
   }
 
   public static final Mode simMode = Mode.SIM;

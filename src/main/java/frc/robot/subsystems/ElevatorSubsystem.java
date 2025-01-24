@@ -37,7 +37,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   // Declare PID
   private final SparkClosedLoopController m_ElevatorMainPIDController;
   // Declare Encoder
-  private RelativeEncoder m_ElevatorEncoder;
+  private final RelativeEncoder m_ElevatorEncoder;
   // Declare Simulated Encoder
   private final SparkRelativeEncoderSim m_ElevatorEncoderSim;
   // Declare Elevator Physics Engine
