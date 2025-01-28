@@ -83,7 +83,7 @@ public final class Constants {
 
   // Camera Constants
   public static final class PoseCamera1 {
-    public static final String name = "pose1";
+    public static final String name = "Pose1";
     // XYZ
     private static final double xLocation = Units.inchesToMeters(6);
     private static final double yLocation = Units.inchesToMeters(9.3);
@@ -99,7 +99,7 @@ public final class Constants {
   }
 
   public static final class PoseCamera2 {
-    public static final String name = "pose2";
+    public static final String name = "Pose2";
     // XYZ
     private static final double xLocation = Units.inchesToMeters(6);
     private static final double yLocation = Units.inchesToMeters(9.3);
@@ -115,7 +115,7 @@ public final class Constants {
   }
 
   public static final class TargetingCamera1 {
-    public static final String name = "targeting1";
+    public static final String name = "Targeting1";
     // XYZ
     private static final double xLocation = Units.inchesToMeters(6);
     private static final double yLocation = Units.inchesToMeters(9.3);
