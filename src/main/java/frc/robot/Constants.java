@@ -31,9 +31,7 @@ public final class Constants {
     public static final int MOTOR_ELEVATOR_RIGHT_ID = 22;
 
     /// Arm Motors
-    public static final int MOTOR_ARM_LEFT_ID = 31;
-    public static final int MOTOR_ARM_RIGHT_ID = 32;
-
+    public static final int MOTOR_ARM_MAIN_ID = 31;
 
     /// Shooter Motors
     public static final int MOTOR_SHOOTER_LEFT_ID = 41;
