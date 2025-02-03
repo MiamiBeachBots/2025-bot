@@ -8,25 +8,32 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 
 public class ShooterState {
-  public enum ShooterMode {
-    DEFAULT,
-    INTAKE,
-    TROUGH,
-    REEFT2,
-    REEFT3,
-    REEFT4,
-    BARGE,
-  };
+  /** Class for presets */
+  public static class ShooterMode {
+    public final String name;
+    public final int speed;
+    public final int height;
+    public final int angle;
 
-  public static final class Speeds { // TODO
-    public static final int DEFAULT = 0;
-    public static final int INTAKE = 0;
-    public static final int TROUGH = 0;
-    public static final int REEFT2 = 0;
-    public static final int REEFT3 = 0;
-    public static final int REEFT4 = 0;
-    public static final int BARGE = 0;
+    public ShooterMode(String Name, int Speed, int Height, int Angle) {
+      name = Name;
+      speed = Speed;
+      height = Height;
+      angle = Angle;
+    }
   }
+
+  // TODO: Numbers
+  public static class ShooterModes {
+    public static final ShooterMode DEFAULT = new ShooterMode("Default", 0, 0, 0);
+    public static final ShooterMode INTAKE = new ShooterMode("Intake", 0, 0, 0);
+    public static final ShooterMode TROUGH = new ShooterMode("Trough", 0, 0, 0);
+    public static final ShooterMode REEFT2 = new ShooterMode("ReefT2", 0, 0, 0);
+    public static final ShooterMode REEFT3 = new ShooterMode("ReefT3", 0, 0, 0);
+    public static final ShooterMode REEFT4 = new ShooterMode("ReefT4", 0, 0, 0);
+    public static final ShooterMode BARGE = new ShooterMode("Barge", 0, 0, 0);
+  }
+  ;
 
   public final boolean isSensing = false;
   public boolean isLoaded = true;
@@ -34,7 +41,7 @@ public class ShooterState {
   public boolean isResting = true;
   public boolean isShooting = false;
   public boolean axisEnabled = false;
-  public ShooterMode mode = ShooterMode.DEFAULT;
+  public ShooterMode mode = ShooterModes.DEFAULT;
 
   public ShooterState() {}
 
@@ -56,10 +63,10 @@ public class ShooterState {
 
   public void stopShooting() {
     isShooting = false;
-    if (mode == ShooterMode.INTAKE && isLoaded) {
-      mode = ShooterMode.DEFAULT;
-    } else if (mode != ShooterMode.INTAKE && !isLoaded) {
-      mode = ShooterMode.DEFAULT;
+    if (mode == ShooterModes.INTAKE && isLoaded) {
+      mode = ShooterModes.DEFAULT;
+    } else if (mode != ShooterModes.INTAKE && !isLoaded) {
+      mode = ShooterModes.DEFAULT;
     }
   }
 
@@ -69,27 +76,11 @@ public class ShooterState {
 
   public void setLowered() {
     isLowered = true;
-    mode = ShooterMode.DEFAULT;
+    mode = ShooterModes.DEFAULT;
   }
 
   public double getShooterSpeed() {
-
-    switch (mode) {
-      case TROUGH:
-        return Speeds.TROUGH;
-      case INTAKE:
-        return Speeds.INTAKE;
-      case REEFT2:
-        return Speeds.REEFT2;
-      case REEFT3:
-        return Speeds.REEFT3;
-      case REEFT4:
-        return Speeds.REEFT4;
-      case BARGE:
-        return Speeds.BARGE;
-      default:
-        return Speeds.DEFAULT;
-    }
+    return mode.speed;
   }
 
   /**
@@ -100,7 +91,7 @@ public class ShooterState {
    */
   public void updateDash() {
     SmartDashboard.putBoolean("Manual Arm Mode Enabled", axisEnabled);
-    SmartDashboard.putString("Arm Mode", mode.name());
+    SmartDashboard.putString("Arm Mode", mode.name);
     SmartDashboard.putBoolean("Loaded", isLoaded);
     SmartDashboard.putBoolean("Lowered", isLowered);
     SmartDashboard.putBoolean("Resting", isResting);
