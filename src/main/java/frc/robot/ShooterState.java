@@ -33,19 +33,21 @@ public class ShooterState {
   // TODO: Numbers
   public static class ShooterModes {
     public static final ShooterMode DEFAULT =
-        new ShooterMode("Default", Constants.MAX_SHOOTER_SPEED, 0, 0);
+        new ShooterMode("Default", Constants.MAX_SHOOTER_SPEED, 0, 105);
     public static final ShooterMode INTAKE =
-        new ShooterMode("Intake", -Constants.MAX_SHOOTER_SPEED, 0, 0);
+        new ShooterMode("Intake", -Constants.MAX_SHOOTER_SPEED, 0, -30);
+    public static final ShooterMode PROCESSOR =
+        new ShooterMode("Processor", Constants.MAX_SHOOTER_SPEED * 0.25, 0, -15);
     public static final ShooterMode TROUGH =
-        new ShooterMode("Trough", Constants.MAX_SHOOTER_SPEED, 19, 0);
+        new ShooterMode("Trough", Constants.MAX_SHOOTER_SPEED, 19, -15);
     public static final ShooterMode REEFT2 =
-        new ShooterMode("ReefT2", Constants.MAX_SHOOTER_SPEED, 30.41, 0);
+        new ShooterMode("ReefT2", Constants.MAX_SHOOTER_SPEED, 30.41, -30);
     public static final ShooterMode REEFT3 =
-        new ShooterMode("ReefT3", Constants.MAX_SHOOTER_SPEED, 46.28, 0);
+        new ShooterMode("ReefT3", Constants.MAX_SHOOTER_SPEED, 46.28, -30);
     public static final ShooterMode REEFT4 =
-        new ShooterMode("ReefT4", Constants.MAX_SHOOTER_SPEED, 71.87, 0);
+        new ShooterMode("ReefT4", Constants.MAX_SHOOTER_SPEED, 71.87, -60);
     public static final ShooterMode BARGE =
-        new ShooterMode("Barge", Constants.MAX_SHOOTER_SPEED, 0, 0);
+        new ShooterMode("Barge", Constants.MAX_SHOOTER_SPEED * 0.25, 78, 0);
   }
   ;
 

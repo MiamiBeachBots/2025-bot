@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.Constants.CANConstants;
 import frc.robot.DriveConstants;
 
@@ -170,11 +171,12 @@ public class ArmSubsystem extends SubsystemBase {
    * @param radians Angle in radians to move the arm to
    */
   public void SetAngle(double radians) {
+    double trueAngle = radians + Constants.ARM_ANGLE_OFFSET;
     m_ArmMainPIDController.setReference(
-        radians,
+        trueAngle,
         SparkBase.ControlType.kMAXMotionPositionControl,
         DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ArmFeedforward.calculate(radians, m_ArmEncoder.getVelocity()));
+        m_ArmFeedforward.calculate(trueAngle, m_ArmEncoder.getVelocity()));
   }
 
   /** Lower the Arm */

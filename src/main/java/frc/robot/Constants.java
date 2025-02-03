@@ -56,9 +56,12 @@ public final class Constants {
     REPLAY
   }
 
+  // Max speeds
   public static final double MAX_SPEED = 0.8;
   public static final double MAX_SHOOTER_SPEED = 0.8;
   public static final double LIFTER_SPEED = 0.5;
+
+  public static final double ARM_ANGLE_OFFSET = Units.degreesToRadians(105);
 
   // USB Devices
   public static final int CONTROLLER_USB_INDEX = 0;
