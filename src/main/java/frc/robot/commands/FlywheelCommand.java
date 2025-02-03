@@ -29,19 +29,21 @@ public class FlywheelCommand extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    m_shooterState.startShooting();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     m_shooterSubsystem.SpinShooter(m_shooterState.getShooterSpeed());
-    m_shooterState.shooting = true;
+    m_shooterState.startShooting();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_shooterState.shooting = false;
+    m_shooterState.stopShooting();
     m_shooterSubsystem.StopShooter();
   }
 

@@ -8,22 +8,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 
 public class ShooterState {
-
-  public boolean isLoaded = true;
-  public boolean isLowered = true;
-  public boolean isResting = true;
-
   public enum ShooterMode {
     DEFAULT,
     INTAKE,
     TROUGH,
-    REEF1,
-    REEF2,
-    REEF3,
+    REEFT2,
+    REEFT3,
+    REEFT4,
     BARGE,
   };
 
-  public static final class Speeds {
+  public static final class Speeds { // TODO
     public static final int DEFAULT = 0;
     public static final int INTAKE = 0;
     public static final int TROUGH = 0;
@@ -33,9 +28,13 @@ public class ShooterState {
     public static final int BARGE = 0;
   }
 
-  public ShooterMode mode = ShooterMode.DEFAULT;
+  public final boolean isSensing = false;
+  public boolean isLoaded = true;
+  public boolean isLowered = true;
+  public boolean isResting = true;
+  public boolean isShooting = false;
   public boolean axisEnabled = false;
-  public boolean shooting = false;
+  public ShooterMode mode = ShooterMode.DEFAULT;
 
   public ShooterState() {}
 
@@ -51,14 +50,21 @@ public class ShooterState {
     isResting = true;
   }
 
-  public void toggleAxis() {
-    axisEnabled = !axisEnabled;
+  public void startShooting() {
+    isShooting = true;
   }
 
-  public void setFired() {
-    isLoaded = false;
-    isLowered = false;
-    mode = ShooterMode.DEFAULT;
+  public void stopShooting() {
+    isShooting = false;
+    if (mode == ShooterMode.INTAKE && isLoaded) {
+      mode = ShooterMode.DEFAULT;
+    } else if (mode != ShooterMode.INTAKE && !isLoaded) {
+      mode = ShooterMode.DEFAULT;
+    }
+  }
+
+  public void toggleAxis() {
+    axisEnabled = !axisEnabled;
   }
 
   public void setLowered() {
@@ -69,21 +75,21 @@ public class ShooterState {
   public double getShooterSpeed() {
 
     switch (mode) {
-      case TROUGH: // TODO
+      case TROUGH:
         return Speeds.TROUGH;
       case INTAKE:
         return Speeds.INTAKE;
-      case REEF1:
+      case REEFT2:
         return Speeds.REEFT2;
-      case REEF2:
+      case REEFT3:
         return Speeds.REEFT3;
-      case REEF3:
+      case REEFT4:
         return Speeds.REEFT4;
+      case BARGE:
+        return Speeds.BARGE;
       default:
         return Speeds.DEFAULT;
     }
-
-    // return 0;
   }
 
   /**
@@ -98,6 +104,6 @@ public class ShooterState {
     SmartDashboard.putBoolean("Loaded", isLoaded);
     SmartDashboard.putBoolean("Lowered", isLowered);
     SmartDashboard.putBoolean("Resting", isResting);
-    SmartDashboard.putBoolean("Arm Shooting", shooting);
+    SmartDashboard.putBoolean("Arm Shooting", isShooting);
   }
 }
