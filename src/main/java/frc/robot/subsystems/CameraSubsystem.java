@@ -62,15 +62,15 @@ public class CameraSubsystem extends SubsystemBase {
     m_driveSubsystem = d_subsystem;
     aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-    poseCamera1 = new PhotonCamera(Constants.PoseCamera1.name);
-    poseCamera2 = new PhotonCamera(Constants.PoseCamera2.name);
-    targetingCamera1 = new PhotonCamera(Constants.TargetingCamera1.name);
+    poseCamera1 = new PhotonCamera(Constants.PoseCamera1.NAME);
+    poseCamera2 = new PhotonCamera(Constants.PoseCamera2.NAME);
+    targetingCamera1 = new PhotonCamera(Constants.TargetingCamera1.NAME);
 
     poseCamera1PoseEstimator =
         new PhotonPoseEstimator(
             aprilTagFieldLayout,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            Constants.PoseCamera1.location);
+            Constants.PoseCamera1.LOCATION);
     poseCamera2PoseEstimator =
         new PhotonPoseEstimator(
             aprilTagFieldLayout,
@@ -115,7 +115,7 @@ public class CameraSubsystem extends SubsystemBase {
     targetingCamera1Sim = new PhotonCameraSim(targetingCamera1, TargetingCameraProp);
 
     // Set Camera locations and add them to the vision simulation
-    poseVisionSim.addCamera(poseCamera1Sim, Constants.PoseCamera1.location);
+    poseVisionSim.addCamera(poseCamera1Sim, Constants.PoseCamera1.LOCATION);
     poseVisionSim.addCamera(poseCamera2Sim, Constants.PoseCamera2.location);
     targetingVisionSim.addCamera(targetingCamera1Sim, Constants.TargetingCamera1.location);
   }

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /*
@@ -11,27 +12,33 @@ public class ShooterState {
   /** Class for presets */
   public static class ShooterMode {
     public final String name;
-    public final int speed;
-    public final int height;
-    public final int angle;
+    public final double speed;
+    public final double height;
+    public final double angle;
 
-    public ShooterMode(String Name, int Speed, int Height, int Angle) {
+    /**
+     * @param Name Which preset is it
+     * @param Speed m/s
+     * @param Height inches
+     * @param Angle degrees
+     */
+    public ShooterMode(String Name, double Speed, double Height, double Angle) {
       name = Name;
-      speed = Speed;
-      height = Height;
-      angle = Angle;
+      speed = Speed; 
+      height = Units.inchesToMeters(Height);
+      angle = Units.degreesToRadians(Angle);
     }
   }
 
   // TODO: Numbers
   public static class ShooterModes {
-    public static final ShooterMode DEFAULT = new ShooterMode("Default", 0, 0, 0);
-    public static final ShooterMode INTAKE = new ShooterMode("Intake", 0, 0, 0);
-    public static final ShooterMode TROUGH = new ShooterMode("Trough", 0, 0, 0);
-    public static final ShooterMode REEFT2 = new ShooterMode("ReefT2", 0, 0, 0);
-    public static final ShooterMode REEFT3 = new ShooterMode("ReefT3", 0, 0, 0);
-    public static final ShooterMode REEFT4 = new ShooterMode("ReefT4", 0, 0, 0);
-    public static final ShooterMode BARGE = new ShooterMode("Barge", 0, 0, 0);
+    public static final ShooterMode DEFAULT = new ShooterMode("Default", 1, 0, 0);
+    public static final ShooterMode INTAKE = new ShooterMode("Intake", -1, 0, 0);
+    public static final ShooterMode TROUGH = new ShooterMode("Trough", 1, 19, 0);
+    public static final ShooterMode REEFT2 = new ShooterMode("ReefT2", 1, 30.41, 0);
+    public static final ShooterMode REEFT3 = new ShooterMode("ReefT3", 1, 46.28, 0);
+    public static final ShooterMode REEFT4 = new ShooterMode("ReefT4", 1, 71.87, 0);
+    public static final ShooterMode BARGE = new ShooterMode("Barge", 1, 0, 0);
   }
   ;
 

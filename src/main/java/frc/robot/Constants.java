@@ -42,8 +42,8 @@ public final class Constants {
     public static final int MOTOR_LIFTER_RIGHT_ID = -1;
   }
 
-  public static final Mode simMode = Mode.SIM;
-  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+  public static final Mode SIM_MODE = Mode.SIM;
+  public static final Mode CURRENT_MODE = RobotBase.isReal() ? Mode.REAL : SIM_MODE;
 
   public static enum Mode {
     /** Running on a real robot. */
@@ -80,53 +80,55 @@ public final class Constants {
   public static final int EXAMPLE_LIMIT_SWITCH = 0;
 
   // Shooter Angles
-
   // Camera Constants
   public static final class PoseCamera1 {
-    public static final String name = "Pose1";
+    public static final String NAME = "Pose1";
     // XYZ
-    private static final double xLocation = Units.inchesToMeters(6);
-    private static final double yLocation = Units.inchesToMeters(9.3);
-    private static final double zLocation = Units.inchesToMeters(10.5);
+    private static final double X_LOCATION = Units.inchesToMeters(6);
+    private static final double Y_LOCATION = Units.inchesToMeters(9.3);
+    private static final double Z_LOCATION = Units.inchesToMeters(10.5);
     // ROTATION
-    public static final double roll = Units.degreesToRadians(90);
-    public static final double pitch = Units.degreesToRadians(0.0);
-    public static final double yaw = Units.degreesToRadians(0);
+    public static final double ROLL = Units.degreesToRadians(90);
+    public static final double PITCH = Units.degreesToRadians(0.0);
+    public static final double YAW = Units.degreesToRadians(0);
 
-    public static final Transform3d location =
+    public static final Transform3d LOCATION =
         new Transform3d(
-            new Translation3d(xLocation, yLocation, zLocation), new Rotation3d(roll, pitch, yaw));
+            new Translation3d(X_LOCATION, Y_LOCATION, Z_LOCATION),
+            new Rotation3d(ROLL, PITCH, YAW));
   }
 
   public static final class PoseCamera2 {
-    public static final String name = "Pose2";
+    public static final String NAME = "Pose2";
     // XYZ
-    private static final double xLocation = Units.inchesToMeters(6);
-    private static final double yLocation = Units.inchesToMeters(9.3);
-    private static final double zLocation = Units.inchesToMeters(10.5);
+    private static final double X_Location = Units.inchesToMeters(6);
+    private static final double Y_Location = Units.inchesToMeters(9.3);
+    private static final double Z_Location = Units.inchesToMeters(10.5);
     // ROTATION
-    public static final double roll = Units.degreesToRadians(90);
-    public static final double pitch = Units.degreesToRadians(0.0);
-    public static final double yaw = Units.degreesToRadians(0);
+    public static final double ROLL = Units.degreesToRadians(90);
+    public static final double PITCH = Units.degreesToRadians(0.0);
+    public static final double YAW = Units.degreesToRadians(0);
 
     public static final Transform3d location =
         new Transform3d(
-            new Translation3d(xLocation, yLocation, zLocation), new Rotation3d(roll, pitch, yaw));
+            new Translation3d(X_Location, Y_Location, Z_Location),
+            new Rotation3d(ROLL, PITCH, YAW));
   }
 
   public static final class TargetingCamera1 {
-    public static final String name = "Targeting1";
+    public static final String NAME = "Targeting1";
     // XYZ
-    private static final double xLocation = Units.inchesToMeters(6);
-    private static final double yLocation = Units.inchesToMeters(9.3);
-    private static final double zLocation = Units.inchesToMeters(10.5);
+    private static final double X_LOCATION = Units.inchesToMeters(6);
+    private static final double Y_LOCATION = Units.inchesToMeters(9.3);
+    private static final double Z_LOCATION = Units.inchesToMeters(10.5);
     // ROTATION
-    public static final double roll = Units.degreesToRadians(90);
-    public static final double pitch = Units.degreesToRadians(0.0);
-    public static final double yaw = Units.degreesToRadians(0);
+    public static final double ROLL = Units.degreesToRadians(90);
+    public static final double PITCH = Units.degreesToRadians(0.0);
+    public static final double YAW = Units.degreesToRadians(0);
 
     public static final Transform3d location =
         new Transform3d(
-            new Translation3d(xLocation, yLocation, zLocation), new Rotation3d(roll, pitch, yaw));
+            new Translation3d(X_LOCATION, Y_LOCATION, Z_LOCATION),
+            new Rotation3d(ROLL, PITCH, YAW));
   }
 }

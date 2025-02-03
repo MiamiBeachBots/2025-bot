@@ -75,8 +75,9 @@ public class RobotContainer {
       new FlywheelCommand(m_shooterSubsytem, m_shooterState);
   // private final LifterCommand m_LeftLifterCommand = new LifterCommand(m_leftLifterSubsystem);
   // private final LifterCommand m_RightLifterCommand = new LifterCommand(m_rightLifterSubsystem);
-  private final ElevatorCommand m_ElevatorCommand = new ElevatorCommand(m_ElevatorSubsystem);
-  private final ArmCommand m_ArmCommand = new ArmCommand(m_ArmSubsystem);
+  private final ElevatorCommand m_ElevatorCommand =
+      new ElevatorCommand(m_ElevatorSubsystem, m_shooterState);
+  private final ArmCommand m_ArmCommand = new ArmCommand(m_ArmSubsystem, m_shooterState);
 
   // EX: these commands are used by autonomous only
   // private final AimAmpCommand m_AimAmpCommand = new AimAmpCommand(m_armSubsystem,
