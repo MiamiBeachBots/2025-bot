@@ -62,6 +62,7 @@ public final class Constants {
   public static final double LIFTER_SPEED = 0.5;
 
   public static final double ARM_ANGLE_OFFSET = Units.degreesToRadians(105);
+  public static final double ELEVATOR_OFFSET = Units.inchesToMeters(5);
 
   // USB Devices
   public static final int CONTROLLER_USB_INDEX = 0;

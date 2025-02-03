@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.Constants.CANConstants;
 import frc.robot.DriveConstants;
 
@@ -188,11 +189,12 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   /** Move elevator to a specific height */
   public void SetHeight(double meters) {
+    double relativeHeight = meters - Constants.ELEVATOR_OFFSET;
     m_ElevatorMainPIDController.setReference(
-        meters,
+        relativeHeight,
         SparkBase.ControlType.kMAXMotionPositionControl,
         DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ElevatorFeedforward.calculate(meters));
+        m_ElevatorFeedforward.calculate(relativeHeight));
   }
 
   /** Retract the elevator */
