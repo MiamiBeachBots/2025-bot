@@ -9,17 +9,29 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class ShooterState {
 
-  public boolean isLoaded = false;
-  public boolean isLowered = false;
+  public boolean isLoaded = true;
+  public boolean isLowered = true;
+  public boolean isResting = true;
 
   public enum ShooterMode {
     DEFAULT,
-    SOURCE,
-    AMP,
-    SPEAKER,
-    TRAP,
-    STOP
+    INTAKE,
+    TROUGH,
+    REEF1,
+    REEF2,
+    REEF3,
+    BARGE,
   };
+
+  public static final class Speeds {
+    public static final int DEFAULT = 0;
+    public static final int INTAKE = 0;
+    public static final int TROUGH = 0;
+    public static final int REEFT2 = 0;
+    public static final int REEFT3 = 0;
+    public static final int REEFT4 = 0;
+    public static final int BARGE = 0;
+  }
 
   public ShooterMode mode = ShooterMode.DEFAULT;
   public boolean axisEnabled = false;
@@ -35,6 +47,10 @@ public class ShooterState {
     mode = newMode;
   }
 
+  public void setResting() {
+    isResting = true;
+  }
+
   public void toggleAxis() {
     axisEnabled = !axisEnabled;
   }
@@ -42,7 +58,7 @@ public class ShooterState {
   public void setFired() {
     isLoaded = false;
     isLowered = false;
-    mode = ShooterMode.SOURCE;
+    mode = ShooterMode.DEFAULT;
   }
 
   public void setLowered() {
@@ -51,22 +67,23 @@ public class ShooterState {
   }
 
   public double getShooterSpeed() {
-    /*
-    Example:
+
     switch (mode) {
-      case SOURCE: // TODO
-        return Constants.SHOOTERSOURCE;
-      case AMP:
-        return Constants.SHOOTERAMP;
-      case SPEAKER:
-        return Constants.SHOOTERSPEAKER;
-      case TRAP:
-        return Constants.SHOOTERTRAP;
+      case TROUGH: // TODO
+        return Speeds.TROUGH;
+      case INTAKE:
+        return Speeds.INTAKE;
+      case REEF1:
+        return Speeds.REEFT2;
+      case REEF2:
+        return Speeds.REEFT3;
+      case REEF3:
+        return Speeds.REEFT4;
       default:
-        return Constants.SHOOTERDEFAULT;
+        return Speeds.DEFAULT;
     }
-    */
-    return 0;
+
+    // return 0;
   }
 
   /**
@@ -80,6 +97,7 @@ public class ShooterState {
     SmartDashboard.putString("Arm Mode", mode.name());
     SmartDashboard.putBoolean("Loaded", isLoaded);
     SmartDashboard.putBoolean("Lowered", isLowered);
+    SmartDashboard.putBoolean("Resting", isResting);
     SmartDashboard.putBoolean("Arm Shooting", shooting);
   }
 }
