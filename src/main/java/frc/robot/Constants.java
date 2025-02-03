@@ -57,6 +57,7 @@ public final class Constants {
   }
 
   public static final double MAX_SPEED = 0.8;
+  public static final double MAX_SHOOTER_SPEED = 0.8;
   public static final double LIFTER_SPEED = 0.5;
 
   // USB Devices

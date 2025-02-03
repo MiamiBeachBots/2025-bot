@@ -24,7 +24,7 @@ public class ShooterState {
      */
     public ShooterMode(String Name, double Speed, double Height, double Angle) {
       name = Name;
-      speed = Speed; 
+      speed = Speed;
       height = Units.inchesToMeters(Height);
       angle = Units.degreesToRadians(Angle);
     }
@@ -32,13 +32,20 @@ public class ShooterState {
 
   // TODO: Numbers
   public static class ShooterModes {
-    public static final ShooterMode DEFAULT = new ShooterMode("Default", 1, 0, 0);
-    public static final ShooterMode INTAKE = new ShooterMode("Intake", -1, 0, 0);
-    public static final ShooterMode TROUGH = new ShooterMode("Trough", 1, 19, 0);
-    public static final ShooterMode REEFT2 = new ShooterMode("ReefT2", 1, 30.41, 0);
-    public static final ShooterMode REEFT3 = new ShooterMode("ReefT3", 1, 46.28, 0);
-    public static final ShooterMode REEFT4 = new ShooterMode("ReefT4", 1, 71.87, 0);
-    public static final ShooterMode BARGE = new ShooterMode("Barge", 1, 0, 0);
+    public static final ShooterMode DEFAULT =
+        new ShooterMode("Default", Constants.MAX_SHOOTER_SPEED, 0, 0);
+    public static final ShooterMode INTAKE =
+        new ShooterMode("Intake", -Constants.MAX_SHOOTER_SPEED, 0, 0);
+    public static final ShooterMode TROUGH =
+        new ShooterMode("Trough", Constants.MAX_SHOOTER_SPEED, 19, 0);
+    public static final ShooterMode REEFT2 =
+        new ShooterMode("ReefT2", Constants.MAX_SHOOTER_SPEED, 30.41, 0);
+    public static final ShooterMode REEFT3 =
+        new ShooterMode("ReefT3", Constants.MAX_SHOOTER_SPEED, 46.28, 0);
+    public static final ShooterMode REEFT4 =
+        new ShooterMode("ReefT4", Constants.MAX_SHOOTER_SPEED, 71.87, 0);
+    public static final ShooterMode BARGE =
+        new ShooterMode("Barge", Constants.MAX_SHOOTER_SPEED, 0, 0);
   }
   ;
 
