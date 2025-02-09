@@ -54,11 +54,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   // general drive constants
   // https://www.chiefdelphi.com/t/encoders-velocity-to-m-s/390332/2
   // https://sciencing.com/convert-rpm-linear-speed-8232280.html
-  private final double kWheelDiameter = 1; // meters TODO: Figure out ratio
-  private final double kGearRatio = 16; // TBD
+  private final double kGearRatio = 48; // TBD
   // basically converted from rotations to to radians to then meters using the wheel diameter.
   // the diameter is already *2 so we don't need to multiply by 2 again.
-  private final double kPositionConversionRatio = (Math.PI * kWheelDiameter) / kGearRatio;
+  private final double kPositionConversionRatio = Math.PI / kGearRatio;
   private final double kVelocityConversionRatio = kPositionConversionRatio / 60;
 
   // setup feedforward

@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.Volts;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -26,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.CANConstants;
 import frc.robot.DriveConstants;
+import frc.robot.utils.HelperFunctions;
 
 public class FlywheelSubsystem extends SubsystemBase {
   // Shooter Motors
@@ -49,8 +49,8 @@ public class FlywheelSubsystem extends SubsystemBase {
   // general drive constants
   // https://www.chiefdelphi.com/t/encoders-velocity-to-m-s/390332/2
   // https://sciencing.com/convert-rpm-linear-speed-8232280.html
-  private final double kWheelDiameter = Units.inchesToMeters(4); // meters
-  private final double kGearRatio = 4; // TBD
+  private final double kWheelDiameter = Units.inchesToMeters(3); // meters
+  private final double kGearRatio = 1; // TBD
   // basically converted from rotations to to radians to then meters using the wheel diameter.
   // the diameter is already *2 so we don't need to multiply by 2 again.
   private final double kPositionConversionRatio = (Math.PI * kWheelDiameter) / kGearRatio;
@@ -156,17 +156,9 @@ public class FlywheelSubsystem extends SubsystemBase {
     return m_sysIdRoutine.dynamic(direction);
   }
 
-  /** Spin shooter at a given Speed (M/S) */
-  public void SpinShooter(double speed) {
-    m_ShooterMainPIDController.setReference(
-        speed,
-        SparkBase.ControlType.kVelocity,
-        DriveConstants.kDrivetrainVelocityPIDSlot,
-        m_shooterFeedForward.calculate(speed));
-  }
-
-  public void SpinAtFull() {
-    SpinShooter(1);
+  /** Spin shooter based on percent power */
+  public void SpinShooter(double power) {
+    m_ShooterMainPIDController.setReference(power, SparkMax.ControlType.kDutyCycle);
   }
 
   /** Stop the shooter */
@@ -176,8 +168,7 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   /** Check if shooter is at a given Speed */
   public Boolean isAtSpeedTolerance(double speed) {
-    return (m_ShooterMainEncoder.getVelocity() > speed - 0.1
-        && m_ShooterMainEncoder.getVelocity() < speed + 0.1);
+    return HelperFunctions.inDeadzone(m_ShooterMainEncoder.getVelocity(), 0.1);
   }
 
   @Override

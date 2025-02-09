@@ -2,7 +2,9 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.sim.SparkAbsoluteEncoderSim;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
 import com.revrobotics.spark.SparkBase;
@@ -37,10 +39,12 @@ public class ArmSubsystem extends SubsystemBase {
   private final SparkMaxConfig m_MotorConfig = new SparkMaxConfig();
   // Declare PID
   private final SparkClosedLoopController m_ArmMainPIDController;
-  // Declare Encoder
+  // Declare Encoders
   private RelativeEncoder m_ArmEncoder;
+  private AbsoluteEncoder m_ArmAbsoluteEncoder;
   // Declare Simulated Encoder
   private final SparkRelativeEncoderSim m_ArmEncoderSim;
+  private final SparkAbsoluteEncoderSim m_ArmAbsoluteEncoderSim;
   // Declare Arm Physics Engine
   private final SingleJointedArmSim m_ArmSim;
 
@@ -54,6 +58,9 @@ public class ArmSubsystem extends SubsystemBase {
   // the diameter is already *2 so we don't need to multiply by 2 again.
   private final double kPositionConversionRatio = (Math.PI * 2) / kGearRatio;
   private final double kVelocityConversionRatio = kPositionConversionRatio / 60;
+
+  private final double kPositionConversionRatioAbsolute = (Math.PI * 2);
+  private final double kVelocityConversionRatioAbsolute = kPositionConversionRatioAbsolute / 60;
 
   // setup feedforward
   private final double kS = 0.1; // Static Friction (Volts)
@@ -92,6 +99,7 @@ public class ArmSubsystem extends SubsystemBase {
 
     // Create Simulated encoder
     m_ArmEncoderSim = m_simMotor.getRelativeEncoderSim();
+    m_ArmAbsoluteEncoderSim = m_simMotor.getAbsoluteEncoderSim();
 
     // Create Simulated Physics Engine
     m_ArmSim =
@@ -115,11 +123,15 @@ public class ArmSubsystem extends SubsystemBase {
     // Connect to built in PID controller
     m_ArmMainPIDController = m_Motor.getClosedLoopController();
 
-    // Allow us to read the encoder
+    // Allow us to read the encoders
     m_ArmEncoder = m_Motor.getEncoder();
+    m_ArmAbsoluteEncoder = m_Motor.getAbsoluteEncoder();
 
+    // Set Conversion Factors
     m_MotorConfig.encoder.positionConversionFactor(kPositionConversionRatio);
     m_MotorConfig.encoder.velocityConversionFactor(kVelocityConversionRatio);
+    m_MotorConfig.absoluteEncoder.positionConversionFactor(kPositionConversionRatioAbsolute);
+    m_MotorConfig.absoluteEncoder.velocityConversionFactor(kVelocityConversionRatioAbsolute);
 
     // PID coefficients
     kP = 0.0;
@@ -151,6 +163,12 @@ public class ArmSubsystem extends SubsystemBase {
 
     m_Motor.configure(
         m_MotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    matchEncoders();
+  }
+
+  /** Matches the position of the main encoder with the absolute encoder. */
+  public void matchEncoders() {
+    m_ArmEncoder.setPosition(m_ArmAbsoluteEncoder.getPosition());
   }
 
   public void setVoltage(Voltage voltage) {
@@ -208,5 +226,7 @@ public class ArmSubsystem extends SubsystemBase {
     // update encoder
     m_ArmEncoderSim.setPosition(m_ArmSim.getAngleRads());
     m_ArmEncoderSim.setVelocity(m_ArmSim.getVelocityRadPerSec());
+    m_ArmAbsoluteEncoderSim.setPosition(m_ArmSim.getAngleRads());
+    m_ArmAbsoluteEncoderSim.setVelocity(m_ArmSim.getVelocityRadPerSec());
   }
 }
