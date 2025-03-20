@@ -120,8 +120,9 @@ public class RobotContainer {
     setupTriggers();
     // Bind the commands to the triggers
     if (enableAutoProfiling) {
-      bindDriveSysIDCommands();
-      // bindShooterSysIDCommands();
+      // bindDriveSysIDCommands();
+      bindArmSysIDCommands();
+      // bindElevatorSysIDCommands();
     } else {
       bindCommands();
     }
@@ -197,15 +198,23 @@ public class RobotContainer {
     m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
   }
 
-  private void bindShooterSysIDCommands() {
+  private void bindElevatorSysIDCommands() {
     m_controller1
         .a()
-        .whileTrue(m_shooterSubsytem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        .whileTrue(m_ElevatorSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     m_controller1
         .b()
-        .whileTrue(m_shooterSubsytem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    m_controller1.x().whileTrue(m_shooterSubsytem.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    m_controller1.y().whileTrue(m_shooterSubsytem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        .whileTrue(m_ElevatorSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    m_controller1.x().whileTrue(m_ElevatorSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    m_controller1.y().whileTrue(m_ElevatorSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
+  }
+
+  private void bindArmSysIDCommands() {
+    m_controller1.a().whileTrue(m_ArmSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    m_controller1.b().whileTrue(m_ArmSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    m_controller1.x().whileTrue(m_ArmSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    m_controller1.y().whileTrue(m_ArmSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
   }
 
