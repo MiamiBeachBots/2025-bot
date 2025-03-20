@@ -154,12 +154,10 @@ public class RobotContainer {
     m_troughButton = new JoystickButton(m_flightStick, Constants.TROUGH_BUTTON);
     m_bargeButton = new JoystickButton(m_flightStick, Constants.BARGE_BUTTON);
     m_intakeButton = new JoystickButton(m_flightStick, Constants.INTAKE_BUTTON);
-    //m_reefT2Button = new JoystickButton(m_flightStick, Constants.REEFT2_Button);
-    //m_reefT3Button = new JoystickButton(m_flightStick, Constants.REEFT3_Button);
-    //m_reefT4Button = new JoystickButton(m_flightStick, Constants.REEFT4_Button);
+    m_reefT2Button = new JoystickButton(m_flightStick, Constants.REEFT2_BUTTON);
+    m_reefT3Button = new JoystickButton(m_flightStick, Constants.REEFT3_BUTTON);
+    m_reefT4Button = new JoystickButton(m_flightStick, Constants.REEFT4_BUTTON);
     m_aimButton = new JoystickButton(m_flightStick, Constants.AIM_BUTTON);
-    
-
 
     // load and shoot buttons
     m_shooterTrigger = new JoystickButton(m_flightStick, Constants.TRIGGER);
@@ -169,13 +167,14 @@ public class RobotContainer {
     // commands
     // m_balanceButton.whileTrue(m_balanceCommand);
     m_straightButton.whileTrue(m_straightCommand);
-    m_defaultButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.DEFAULT)));
+    m_defaultButton.whileTrue(
+        new InstantCommand(() -> m_shooterState.setMode(ShooterModes.DEFAULT)));
     m_troughButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.TROUGH)));
     m_bargeButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.BARGE)));
     m_intakeButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.INTAKE)));
-    //m_reefT2Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT2)));
-    //m_reefT3Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT3)));
-    //m_reefT4Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT4)));
+    m_reefT2Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT2)));
+    m_reefT3Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT3)));
+    m_reefT4Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT4)));
 
     m_aimButton.whileTrue(m_aimCommand);
 
