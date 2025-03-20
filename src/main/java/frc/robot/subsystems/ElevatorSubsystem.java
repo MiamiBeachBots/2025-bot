@@ -69,7 +69,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   // other constants
   private final double kMaxHeightMeters = 1.0; // TODO: Update
   private final double kMinHeightMeters = 0.0; // TODO: Update
-  private final double kStartingHeightMeters = kMinHeightMeters + 0.1; // TODO: Update
+  private final double kStartingHeightMeters = kMinHeightMeters + 0.0; // TODO: Update
 
   ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(kS, kG, kV, kA);
 
@@ -119,6 +119,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     // Set current limit
     m_motorConfigLeft.smartCurrentLimit(k_CurrentLimit);
     m_motorConfigRight.smartCurrentLimit(k_CurrentLimit);
+
+    // Invert main motor
+    m_motorConfigLeft.inverted(true);
 
     // Enable follow
     m_motorConfigRight.follow(m_elevatorMotorLeft);
