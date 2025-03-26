@@ -83,6 +83,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final double kMaxAcceleration = 0.5; // M/S^2 TODO: Update
   private final double kAllowedClosedLoopError = 0.01; // Meters
 
+  private final TrapezoidProfile m_profile =
+      new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration));
+  private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
+  private TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+
   // setup SysID for auto profiling
   private final SysIdRoutine m_sysIdRoutine;
 
@@ -153,7 +158,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     kI = 0;
     kD = 922.75;
     kIz = 0;
-    kMaxOutput =0.5;
+    kMaxOutput = 0.5;
     kMinOutput = -0.5;
 
     // set PID coefficients
@@ -205,11 +210,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   /** Move elevator to a specific height */
   public void SetHeight(double meters) {
     m_requestedHeight = meters; // Store the requested height
-    m_ElevatorMainPIDController.setReference(
-        m_requestedHeight,
-        SparkBase.ControlType.kPosition,
-        DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ElevatorFeedforward.calculate(m_requestedHeight));
+    m_goal = new TrapezoidProfile.State(meters, 0); // Set the goal to the requested height
   }
 
   /** Retract the elevator */
@@ -223,6 +224,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     Logger.recordOutput("ElevatorMotorPositionRotations", m_elevatorEncoderLeft.getPosition());
     Logger.recordOutput("ElevatorMotorVelocityRPM", m_elevatorEncoderLeft.getVelocity());
     Logger.recordOutput("ElevatorRequestedHeight", m_requestedHeight);
+    // do the trapezoidal motion profile
+    m_setpoint = m_profile.calculate(0.02, m_setpoint, m_goal);
+    m_ElevatorMainPIDController.setReference(
+        m_setpoint.position,
+        SparkBase.ControlType.kPosition,
+        DriveConstants.kDrivetrainPositionPIDSlot,
+        m_ElevatorFeedforward.calculate(m_setpoint.velocity));
   }
 
   @Override

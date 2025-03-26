@@ -45,7 +45,7 @@ public class ShooterState {
     public static final ShooterMode TROUGH =
         new ShooterMode("Trough", Constants.MAX_SHOOTER_SPEED, 19, -15);
     public static final ShooterMode REEFT2 =
-        new ShooterMode("ReefT2", Constants.MAX_SHOOTER_SPEED, 30.41, -30);
+        new ShooterMode("ReefT2", Constants.MAX_SHOOTER_SPEED, 32, -30);
     public static final ShooterMode REEFT3 =
         new ShooterMode("ReefT3", Constants.MAX_SHOOTER_SPEED, 46.28, -30);
     public static final ShooterMode REEFT4 =
