@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.Logger;
 
 /*
  * ShooterState.java
@@ -57,8 +58,8 @@ public class ShooterState {
 
   public final boolean isSensing = false;
   public boolean isLoaded = true;
-  public boolean isLowered = true;
-  public boolean isResting = true;
+  public boolean isLowered = true; // Elevator & Carriage all the way lowered
+  public boolean isResting = true; // Starting position
   public boolean isShooting = false;
   public boolean axisEnabled = false;
   public ShooterMode mode = ShooterModes.DEFAULT;
@@ -116,5 +117,12 @@ public class ShooterState {
     SmartDashboard.putBoolean("Lowered", isLowered);
     SmartDashboard.putBoolean("Resting", isResting);
     SmartDashboard.putBoolean("Arm Shooting", isShooting);
+    // Add to log
+    Logger.recordOutput("ArmStateManual", axisEnabled);
+    Logger.recordOutput("ArmStateMode", mode.name);
+    Logger.recordOutput("ArmStateLoaded", isLoaded);
+    Logger.recordOutput("ArmStateLowered", isLowered);
+    Logger.recordOutput("ArmStateResting", isResting);
+    Logger.recordOutput("ArmStateShooting", isShooting);
   }
 }
