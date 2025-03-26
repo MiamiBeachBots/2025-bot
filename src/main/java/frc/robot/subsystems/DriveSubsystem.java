@@ -169,6 +169,8 @@ public class DriveSubsystem extends SubsystemBase {
     // invert motors
     m_backRightConfig.inverted(true);
     m_frontRightConfig.inverted(true);
+    m_backLeftConfig.inverted(false);
+    m_frontLeftConfig.inverted(false);
 
     // setup main and secondary motors
     m_frontLeftConfig.follow(m_backLeft); // set front left to follow back left
@@ -592,6 +594,10 @@ public class DriveSubsystem extends SubsystemBase {
     // Update the odometry in the periodic block
     m_driveOdometry.update(getRotation2d(), getPositionLeft(), getPositionRight());
     field.setRobotPose(getPose());
+    Logger.recordOutput("DriveLeftMotorPositionRotations", m_encoderBackLeft.getPosition());
+    Logger.recordOutput("DriveRightMotorPositionRotations", m_encoderBackRight.getPosition());
+    Logger.recordOutput("DriveLeftMotorVelocityRPM", m_encoderBackLeft.getVelocity());
+    Logger.recordOutput("DriveRightMotorVelocityRPM", m_encoderBackRight.getVelocity());
   }
 
   @Override

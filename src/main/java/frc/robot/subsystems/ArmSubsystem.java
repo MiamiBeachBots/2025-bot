@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.CANConstants;
 import frc.robot.DriveConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class ArmSubsystem extends SubsystemBase {
   // Decalare Motor
@@ -155,7 +156,11 @@ public class ArmSubsystem extends SubsystemBase {
     // setup SysID for auto profiling
     m_sysIdRoutine =
         new SysIdRoutine(
-            new SysIdRoutine.Config(),
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> this.setVoltage(voltage),
                 null, // No log consumer, since data is recorded by URCL
@@ -205,6 +210,8 @@ public class ArmSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput("ArmMotorPositionRotations", m_ArmEncoder.getPosition());
+    Logger.recordOutput("ArmMotorVelocityRPM", m_ArmEncoder.getVelocity());
   }
 
   @Override

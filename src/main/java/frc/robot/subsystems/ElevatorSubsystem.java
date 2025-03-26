@@ -14,6 +14,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.CANConstants;
 import frc.robot.DriveConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
   // Declare Motor
@@ -61,15 +63,16 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final double kVelocityConversionRatio = kPositionConversionRatio / 60;
 
   // setup feedforward
-  private final double kS = 0.1; // Static Friction (Volts)
-  private final double kG = 0.1; // Inertia (Volts)
-  private final double kV = 0.1; // Mass (Volts*Seconds / Meter)
-  private final double kA = 0.1; // Acceleration (Volts * Seconds^2 / Meter)
+  private final double kS = 0.023202; // Static Friction (Volts)
+  private final double kG = 0.30361; // Inertia (Volts)
+  private final double kV = 1.9516; // Mass (Volts*Seconds / Meter)
+  private final double kA = 0.4413; // Acceleration (Volts * Seconds^2 / Meter)
 
   // other constants
   private final double kMaxHeightMeters = 1.0; // TODO: Update
   private final double kMinHeightMeters = 0.0; // TODO: Update
-  private final double kStartingHeightMeters = kMinHeightMeters + 0.0; // TODO: Update
+  private final double kStartingHeightMeters =
+      kMinHeightMeters + Units.inchesToMeters(0.355); // TODO: Update
 
   ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(kS, kG, kV, kA);
 
@@ -122,9 +125,10 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     // Invert main motor
     m_motorConfigLeft.inverted(true);
+    m_motorConfigRight.inverted(false);
 
     // Enable follow
-    m_motorConfigRight.follow(m_elevatorMotorLeft);
+    m_motorConfigRight.follow(m_elevatorMotorLeft, false);
 
     // Connect to built in PID controller
     m_ElevatorMainPIDController = m_elevatorMotorLeft.getClosedLoopController();
@@ -140,12 +144,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_motorConfigRight.encoder.velocityConversionFactor(kVelocityConversionRatio);
 
     // PID coefficients
-    kP = 0.0;
+    kP = 4.0671;
     kI = 0;
-    kD = 0;
+    kD = 478.16;
     kIz = 0;
-    kMaxOutput = 0.8;
-    kMinOutput = -0.8;
+    kMaxOutput = 0.7;
+    kMinOutput = -0.7;
 
     // set PID coefficients
     m_motorConfigLeft.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainPositionPIDSlot);
@@ -164,7 +168,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     // setup SysID for auto profiling
     m_sysIdRoutine =
         new SysIdRoutine(
-            new SysIdRoutine.Config(),
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("SysIdTestState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> this.setVoltage(voltage),
                 null, // No log consumer, since data is recorded by URCL
@@ -207,6 +215,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput("ElevatorMotorPositionRotations", m_elevatorEncoderLeft.getPosition());
+    Logger.recordOutput("ElevatorMotorVelocityRPM", m_elevatorEncoderLeft.getVelocity());
   }
 
   @Override
