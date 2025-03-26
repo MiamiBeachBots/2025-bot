@@ -101,6 +101,9 @@ public class Robot extends LoggedRobot {
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // This is a custom periodic function that runs for inter subsystem state updating
+    m_robotContainer.periodic();
+
     // Return to normal thread priority
     Threads.setCurrentThreadPriority(false, 10);
     if (m_robotContainer.enableAutoProfiling) {

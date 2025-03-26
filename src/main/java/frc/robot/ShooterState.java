@@ -107,9 +107,9 @@ public class ShooterState {
    * Updates the values on the SmartDashboard related to the shooter state. This method puts the
    * values of various shooter state variables onto the SmartDashboard. The variables include
    * whether the manual arm mode is enabled, the current arm mode, whether the shooter is loaded,
-   * whether the arm is lowered, and whether the arm is shooting.
+   * whether the arm is lowered, and whether the arm is shooting. It also adds things to the logs
    */
-  public void updateDash() {
+  public void StatePeriodic() {
     SmartDashboard.putBoolean("Manual Arm Mode Enabled", axisEnabled);
     SmartDashboard.putString("Arm Mode", mode.name);
     SmartDashboard.putBoolean("Loaded", isLoaded);

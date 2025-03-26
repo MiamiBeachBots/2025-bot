@@ -282,4 +282,9 @@ public class RobotContainer {
     String autoName = autoDashboardChooser.get();
     return new PathPlannerAuto(autoName);
   }
+
+  public void periodic() {
+    // This method will be called once per scheduler run (Only for inter subsystem state updating)
+    m_shooterState.StatePeriodic();
+  }
 }
