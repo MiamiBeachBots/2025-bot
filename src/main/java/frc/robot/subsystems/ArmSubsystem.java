@@ -16,6 +16,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -84,11 +85,19 @@ public class ArmSubsystem extends SubsystemBase {
   private final double kMaxAcceleration = 0.1; // R/S^2
   private final double kAllowedClosedLoopError = 0.05; // Radians
 
+  private final TrapezoidProfile m_profile =
+      new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration));
+  private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
+  private TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+
   // setup SysID for auto profiling
   private final SysIdRoutine m_sysIdRoutine;
 
   // current limit
   private final int k_CurrentLimit = 60;
+
+  // Requested Angle
+  private double m_requestedAngle = 0;
 
   public ArmSubsystem() {
     // Create Arm motor
@@ -194,12 +203,9 @@ public class ArmSubsystem extends SubsystemBase {
    * @param radians Angle in radians to move the arm to
    */
   public void SetAngle(double radians) {
-    double trueAngle = radians + Constants.ARM_ANGLE_OFFSET;
-    m_ArmMainPIDController.setReference(
-        trueAngle,
-        SparkBase.ControlType.kMAXMotionPositionControl,
-        DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ArmFeedforward.calculate(trueAngle, m_ArmEncoder.getVelocity()));
+    m_requestedAngle = radians;
+    double trueAngle = m_requestedAngle + Constants.ARM_ANGLE_OFFSET;
+    m_goal = new TrapezoidProfile.State(trueAngle, 0);
   }
 
   /** Lower the Arm */
@@ -212,6 +218,13 @@ public class ArmSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     Logger.recordOutput("ArmMotorPositionRotations", m_ArmEncoder.getPosition());
     Logger.recordOutput("ArmMotorVelocityRPM", m_ArmEncoder.getVelocity());
+    Logger.recordOutput("ArmRequestedAngle", m_requestedAngle);
+    m_setpoint = m_profile.calculate(0.02, m_setpoint, m_goal);
+    m_ArmMainPIDController.setReference(
+        m_setpoint.position,
+        SparkBase.ControlType.kPosition,
+        DriveConstants.kDrivetrainPositionPIDSlot,
+        m_ArmFeedforward.calculate(m_setpoint.position, m_setpoint.velocity));
   }
 
   @Override
