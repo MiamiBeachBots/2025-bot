@@ -25,7 +25,11 @@ public class ShooterState {
     public ShooterMode(String Name, double Speed, double Height, double Angle) {
       name = Name;
       speed = Speed;
-      height = Units.inchesToMeters(Height);
+      if (Height == 0) {
+        height = 0;
+      } else {
+        height = Units.inchesToMeters(Height) - Constants.ELEVATOR_OFFSET;
+      }
       angle = Units.degreesToRadians(Angle);
     }
   }

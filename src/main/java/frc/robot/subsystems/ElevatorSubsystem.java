@@ -14,7 +14,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -57,28 +57,30 @@ public class ElevatorSubsystem extends SubsystemBase {
   // https://www.chiefdelphi.com/t/encoders-velocity-to-m-s/390332/2
   // https://sciencing.com/convert-rpm-linear-speed-8232280.html
   private final double kGearRatio = 48; // TBD
+  // (Max Extension - Min Extension) / max rads
+  private final double kDistancePerRadian = 0.1317769131; // Meters / Rads
   // basically converted from rotations to to radians to then meters using the wheel diameter.
   // the diameter is already *2 so we don't need to multiply by 2 again.
-  private final double kPositionConversionRatio = Math.PI / kGearRatio;
+  private final double kPositionConversionRatio = (Math.PI / kGearRatio) * kDistancePerRadian;
   private final double kVelocityConversionRatio = kPositionConversionRatio / 60;
 
   // setup feedforward
-  private final double kS = 0.023202; // Static Friction (Volts)
-  private final double kG = 0.30361; // Inertia (Volts)
-  private final double kV = 1.9516; // Mass (Volts*Seconds / Meter)
-  private final double kA = 0.4413; // Acceleration (Volts * Seconds^2 / Meter)
+  private final double kS = 0.12044; // Static Friction (Volts)
+  private final double kG = 0.306; // Inertia (Volts)
+  private final double kV = 14.903; // Mass (Volts*Seconds / Meter)
+  private final double kA = 1.1681; // Acceleration (Volts * Seconds^2 / Meter)
 
   // other constants
-  private final double kMaxHeightMeters = 1.0; // TODO: Update
-  private final double kMinHeightMeters = 0.0; // TODO: Update
+  private final double kMaxHeightMeters = 1.88; // TODO: Update
+  private final double kMinHeightMeters = 0.0;
   private final double kStartingHeightMeters =
-      kMinHeightMeters + Units.inchesToMeters(0.355); // TODO: Update
+      kMinHeightMeters + Constants.ELEVATOR_OFFSET; // TODO: Update
 
   ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(kS, kG, kV, kA);
 
   // setup trapezoidal motion profile
-  private final double kMaxVelocity = 0.1; // M/S TODO: Update
-  private final double kMaxAcceleration = 0.01; // M/S^2 TODO: Update
+  private final double kMaxVelocity = 0.25; // M/S TODO: Update
+  private final double kMaxAcceleration = 0.5; // M/S^2 TODO: Update
   private final double kAllowedClosedLoopError = 0.01; // Meters
 
   // setup SysID for auto profiling
@@ -86,6 +88,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   // current limit
   private final int k_CurrentLimit = 60;
+
+  // current height setpoint
+  private double m_requestedHeight = 0;
 
   public ElevatorSubsystem() {
     // Create elevator motor
@@ -144,12 +149,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_motorConfigRight.encoder.velocityConversionFactor(kVelocityConversionRatio);
 
     // PID coefficients
-    kP = 4.0671;
+    kP = 14.204;
     kI = 0;
-    kD = 478.16;
+    kD = 922.75;
     kIz = 0;
-    kMaxOutput = 0.7;
-    kMinOutput = -0.7;
+    kMaxOutput =0.5;
+    kMinOutput = -0.5;
 
     // set PID coefficients
     m_motorConfigLeft.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainPositionPIDSlot);
@@ -199,12 +204,12 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   /** Move elevator to a specific height */
   public void SetHeight(double meters) {
-    double relativeHeight = meters - Constants.ELEVATOR_OFFSET;
+    m_requestedHeight = meters; // Store the requested height
     m_ElevatorMainPIDController.setReference(
-        relativeHeight,
-        SparkBase.ControlType.kMAXMotionPositionControl,
+        m_requestedHeight,
+        SparkBase.ControlType.kPosition,
         DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ElevatorFeedforward.calculate(relativeHeight));
+        m_ElevatorFeedforward.calculate(m_requestedHeight));
   }
 
   /** Retract the elevator */
@@ -217,6 +222,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     Logger.recordOutput("ElevatorMotorPositionRotations", m_elevatorEncoderLeft.getPosition());
     Logger.recordOutput("ElevatorMotorVelocityRPM", m_elevatorEncoderLeft.getVelocity());
+    Logger.recordOutput("ElevatorRequestedHeight", m_requestedHeight);
   }
 
   @Override
