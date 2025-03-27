@@ -69,7 +69,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   private final SysIdRoutine m_sysIdRoutine;
 
   // current limit
-  private final int k_CurrentLimit = 80;
+  private final int k_CurrentLimit = 60;
 
   /** Creates a new ShooterSubsystem. */
   public FlywheelSubsystem() {

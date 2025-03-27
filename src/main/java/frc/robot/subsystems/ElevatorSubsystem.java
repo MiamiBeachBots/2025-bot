@@ -65,10 +65,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final double kVelocityConversionRatio = kPositionConversionRatio / 60;
 
   // setup feedforward
-  private final double kS = 0.12044; // Static Friction (Volts)
-  private final double kG = 0.306; // Inertia (Volts)
-  private final double kV = 14.903; // Mass (Volts*Seconds / Meter)
-  private final double kA = 1.1681; // Acceleration (Volts * Seconds^2 / Meter)
+  private final double kS = 0.12353; // Static Friction (Volts)
+  private final double kG = 0.34013; // Inertia (Volts)
+  private final double kV = 14.497; // Mass (Volts*Seconds / Meter)
+  private final double kA = 2.1775; // Acceleration (Volts * Seconds^2 / Meter)
 
   // other constants
   private final double kMaxHeightMeters = 1.88; // TODO: Update
@@ -79,7 +79,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(kS, kG, kV, kA);
 
   // setup trapezoidal motion profile
-  private final double kMaxVelocity = 0.25; // M/S TODO: Update
+  private final double kMaxVelocity = 1.00; // M/S TODO: Update
   private final double kMaxAcceleration = 0.5; // M/S^2 TODO: Update
   private final double kAllowedClosedLoopError = 0.01; // Meters
 
@@ -96,6 +96,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   // current height setpoint
   private double m_requestedHeight = 0;
+
+  // disable PID when profiling
+  private boolean m_PIDEnabled = true;
 
   public ElevatorSubsystem() {
     // Create elevator motor
@@ -154,12 +157,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_motorConfigRight.encoder.velocityConversionFactor(kVelocityConversionRatio);
 
     // PID coefficients
-    kP = 14.204;
+    kP = 20.613;
     kI = 0;
-    kD = 922.75;
+    kD = 1.796;
     kIz = 0;
-    kMaxOutput = 0.5;
-    kMinOutput = -0.5;
+    kMaxOutput = 0.6;
+    kMinOutput = -0.6;
 
     // set PID coefficients
     m_motorConfigLeft.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainPositionPIDSlot);
@@ -174,6 +177,12 @@ public class ElevatorSubsystem extends SubsystemBase {
         kMaxAcceleration, DriveConstants.kDrivetrainPositionPIDSlot);
     m_motorConfigLeft.closedLoop.maxMotion.allowedClosedLoopError(
         kAllowedClosedLoopError, DriveConstants.kDrivetrainPositionPIDSlot);
+
+    // set soft limits
+    m_motorConfigLeft.softLimit.forwardSoftLimitEnabled(true);
+    m_motorConfigLeft.softLimit.forwardSoftLimit(kMaxHeightMeters);
+    m_motorConfigLeft.softLimit.reverseSoftLimitEnabled(true);
+    m_motorConfigLeft.softLimit.reverseSoftLimit(kMinHeightMeters);
 
     // setup SysID for auto profiling
     m_sysIdRoutine =
@@ -226,11 +235,13 @@ public class ElevatorSubsystem extends SubsystemBase {
     Logger.recordOutput("ElevatorRequestedHeight", m_requestedHeight);
     // do the trapezoidal motion profile
     m_setpoint = m_profile.calculate(0.02, m_setpoint, m_goal);
-    m_ElevatorMainPIDController.setReference(
-        m_setpoint.position,
-        SparkBase.ControlType.kPosition,
-        DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ElevatorFeedforward.calculate(m_setpoint.velocity));
+    if (m_PIDEnabled) {
+      m_ElevatorMainPIDController.setReference(
+          m_setpoint.position,
+          SparkBase.ControlType.kPosition,
+          DriveConstants.kDrivetrainPositionPIDSlot,
+          m_ElevatorFeedforward.calculate(m_setpoint.velocity));
+    }
   }
 
   @Override
@@ -255,5 +266,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     m_elevatorEncoderSimLeft.setVelocity(m_ElevatorSim.getVelocityMetersPerSecond());
     m_elevatorEncoderSimRight.setPosition(m_ElevatorSim.getPositionMeters());
     m_elevatorEncoderSimRight.setVelocity(m_ElevatorSim.getVelocityMetersPerSecond());
+  }
+
+  public void disablePID() {
+    m_PIDEnabled = false;
   }
 }

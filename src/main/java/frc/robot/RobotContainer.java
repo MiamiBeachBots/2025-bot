@@ -123,6 +123,7 @@ public class RobotContainer {
       // bindDriveSysIDCommands();
       // bindArmSysIDCommands();
       bindElevatorSysIDCommands();
+      m_ElevatorSubsystem.disablePID();
     } else {
       bindCommands();
     }

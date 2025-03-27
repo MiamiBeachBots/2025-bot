@@ -99,6 +99,9 @@ public class ArmSubsystem extends SubsystemBase {
   // Requested Angle
   private double m_requestedAngle = 0;
 
+  // disable PID when profiling
+  private boolean m_PIDEnabled = true;
+
   public ArmSubsystem() {
     // Create Arm motor
     m_Motor = new SparkMax(CANConstants.MOTOR_ARM_MAIN_ID, SparkMax.MotorType.kBrushless);
@@ -220,11 +223,13 @@ public class ArmSubsystem extends SubsystemBase {
     Logger.recordOutput("ArmMotorVelocityRPM", m_ArmEncoder.getVelocity());
     Logger.recordOutput("ArmRequestedAngle", m_requestedAngle);
     m_setpoint = m_profile.calculate(0.02, m_setpoint, m_goal);
-    m_ArmMainPIDController.setReference(
-        m_setpoint.position,
-        SparkBase.ControlType.kPosition,
-        DriveConstants.kDrivetrainPositionPIDSlot,
-        m_ArmFeedforward.calculate(m_setpoint.position, m_setpoint.velocity));
+    if (m_PIDEnabled) {
+      m_ArmMainPIDController.setReference(
+          m_setpoint.position,
+          SparkBase.ControlType.kPosition,
+          DriveConstants.kDrivetrainPositionPIDSlot,
+          m_ArmFeedforward.calculate(m_setpoint.position, m_setpoint.velocity));
+    }
   }
 
   @Override
@@ -248,5 +253,9 @@ public class ArmSubsystem extends SubsystemBase {
     m_ArmEncoderSim.setVelocity(m_ArmSim.getVelocityRadPerSec());
     m_ArmAbsoluteEncoderSim.setPosition(m_ArmSim.getAngleRads());
     m_ArmAbsoluteEncoderSim.setVelocity(m_ArmSim.getVelocityRadPerSec());
+  }
+
+  public void disablePID() {
+    m_PIDEnabled = false;
   }
 }
