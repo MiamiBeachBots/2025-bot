@@ -31,7 +31,12 @@ public class ShooterState {
       } else {
         height = Units.inchesToMeters(Height) - Constants.ELEVATOR_OFFSET;
       }
-      angle = Units.degreesToRadians(Angle);
+
+      if (Angle == 0) {
+        angle = 0;
+      } else {
+        angle = Units.degreesToRadians(Angle) - Constants.ARM_ANGLE_OFFSET;
+      }
     }
   }
 

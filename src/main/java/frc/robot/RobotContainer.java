@@ -121,9 +121,8 @@ public class RobotContainer {
     // Bind the commands to the triggers
     if (enableAutoProfiling) {
       // bindDriveSysIDCommands();
-      // bindArmSysIDCommands();
-      bindElevatorSysIDCommands();
-      m_ElevatorSubsystem.disablePID();
+      bindArmSysIDCommands();
+      // bindElevatorSysIDCommands();
     } else {
       bindCommands();
     }
@@ -209,6 +208,7 @@ public class RobotContainer {
     m_controller1.x().whileTrue(m_ElevatorSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
     m_controller1.y().whileTrue(m_ElevatorSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
+    m_ElevatorSubsystem.disablePID();
   }
 
   private void bindArmSysIDCommands() {
@@ -217,6 +217,7 @@ public class RobotContainer {
     m_controller1.x().whileTrue(m_ArmSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
     m_controller1.y().whileTrue(m_ArmSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
+    m_ArmSubsystem.disablePID();
   }
 
   private void initializeAutonomous() {

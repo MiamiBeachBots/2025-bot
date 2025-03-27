@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -71,9 +72,8 @@ public class ArmSubsystem extends SubsystemBase {
   private final double kA = 0.1; // Acceleration Volts/(rad/s^2)
 
   // other constants
-  private final double kMaxAngleRads = 1.0; // TODO: Update
-  private final double kMinAngleRads = 0.01;
-  private final double kStartingAngleRads = kMinAngleRads + 0.01;
+  private final double kMaxAngleRads = Units.degreesToRadians(180); // TODO: Update
+  private final double kMinAngleRads = Units.degreesToRadians(0);
   private final double kArmLengthMeters = 0.1;
   private final double kjKgMetersSquared =
       0.1; // The moment of inertia of the arm; can be calculated from CAD software.
@@ -124,7 +124,7 @@ public class ArmSubsystem extends SubsystemBase {
             kMinAngleRads,
             kMaxAngleRads,
             true,
-            kStartingAngleRads,
+            Constants.ARM_ANGLE_OFFSET,
             0.01,
             0.001);
 
@@ -132,6 +132,10 @@ public class ArmSubsystem extends SubsystemBase {
     m_MotorConfig.idleMode(IdleMode.kBrake);
     // Set current limit
     m_MotorConfig.smartCurrentLimit(k_CurrentLimit);
+
+    // invert direction
+    m_MotorConfig.inverted(true);
+    m_MotorConfig.absoluteEncoder.inverted(true);
 
     // Connect to built in PID controller
     m_ArmMainPIDController = m_Motor.getClosedLoopController();
@@ -165,6 +169,13 @@ public class ArmSubsystem extends SubsystemBase {
         kMaxAcceleration, DriveConstants.kDrivetrainPositionPIDSlot);
     m_MotorConfig.closedLoop.maxMotion.allowedClosedLoopError(
         kAllowedClosedLoopError, DriveConstants.kDrivetrainPositionPIDSlot);
+
+    // set soft limits
+    m_MotorConfig.softLimit.forwardSoftLimitEnabled(true);
+    m_MotorConfig.softLimit.forwardSoftLimit(kMaxAngleRads);
+    m_MotorConfig.softLimit.reverseSoftLimitEnabled(true);
+    m_MotorConfig.softLimit.reverseSoftLimit(kMinAngleRads);
+
     // setup SysID for auto profiling
     m_sysIdRoutine =
         new SysIdRoutine(
@@ -207,13 +218,12 @@ public class ArmSubsystem extends SubsystemBase {
    */
   public void SetAngle(double radians) {
     m_requestedAngle = radians;
-    double trueAngle = m_requestedAngle + Constants.ARM_ANGLE_OFFSET;
-    m_goal = new TrapezoidProfile.State(trueAngle, 0);
+    m_goal = new TrapezoidProfile.State(m_requestedAngle, 0);
   }
 
   /** Lower the Arm */
   public void LowerArm() {
-    SetAngle(kStartingAngleRads);
+    SetAngle(kMinAngleRads);
   }
 
   @Override
@@ -221,7 +231,14 @@ public class ArmSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     Logger.recordOutput("ArmMotorPositionRotations", m_ArmEncoder.getPosition());
     Logger.recordOutput("ArmMotorVelocityRPM", m_ArmEncoder.getVelocity());
+    Logger.recordOutput("ArmAbsolutePositionRotation", m_ArmAbsoluteEncoder.getPosition());
+    Logger.recordOutput("ArmAbsoluteVelocityRPM", m_ArmAbsoluteEncoder.getVelocity());
     Logger.recordOutput("ArmRequestedAngle", m_requestedAngle);
+    Logger.recordOutput("ArmRequestedAngleDegrees", Units.radiansToDegrees(m_requestedAngle));
+    Logger.recordOutput(
+        "ArmRelativeEncoderDegrees", Units.rotationsToDegrees(m_ArmEncoder.getPosition()));
+    Logger.recordOutput(
+        "ArmAbsoluteEnoderDegrees", Units.rotationsToDegrees(m_ArmAbsoluteEncoder.getPosition()));
     m_setpoint = m_profile.calculate(0.02, m_setpoint, m_goal);
     if (m_PIDEnabled) {
       m_ArmMainPIDController.setReference(
