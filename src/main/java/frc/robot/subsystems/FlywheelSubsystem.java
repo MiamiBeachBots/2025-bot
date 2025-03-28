@@ -50,7 +50,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   // https://www.chiefdelphi.com/t/encoders-velocity-to-m-s/390332/2
   // https://sciencing.com/convert-rpm-linear-speed-8232280.html
   private final double kWheelDiameter = Units.inchesToMeters(3); // meters
-  private final double kGearRatio = 1; // TBD
+  private final double kGearRatio = 4; // TBD
   // basically converted from rotations to to radians to then meters using the wheel diameter.
   // the diameter is already *2 so we don't need to multiply by 2 again.
   private final double kPositionConversionRatio = (Math.PI * kWheelDiameter) / kGearRatio;
