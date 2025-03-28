@@ -66,10 +66,10 @@ public class ArmSubsystem extends SubsystemBase {
   private final double kVelocityConversionRatioAbsolute = kPositionConversionRatioAbsolute / 60;
 
   // setup feedforward
-  private final double kS = 0.1; // Static Friction (Volts)
-  private final double kG = 0.1; // Inertia (Volts)
-  private final double kV = 0.1; // Mass Volts/(rad/s)
-  private final double kA = 0.1; // Acceleration Volts/(rad/s^2)
+  private final double kS = 0.64053; // Static Friction (Volts)
+  private final double kG = 0.64527; // Inertia (Volts)
+  private final double kV = 0.78309; // Mass Volts/(rad/s)
+  private final double kA = 0.27366; // Acceleration Volts/(rad/s^2)
 
   // other constants
   private final double kMaxAngleRads = Units.degreesToRadians(180); // TODO: Update
@@ -81,9 +81,9 @@ public class ArmSubsystem extends SubsystemBase {
   ArmFeedforward m_ArmFeedforward = new ArmFeedforward(kS, kG, kV, kA);
 
   // setup trapezoidal motion profile
-  private final double kMaxVelocity = 0.2; // R/S
-  private final double kMaxAcceleration = 0.1; // R/S^2
-  private final double kAllowedClosedLoopError = 0.05; // Radians
+  private final double kMaxVelocity = Units.degreesToRadians(45); // R/S
+  private final double kMaxAcceleration = Units.degreesToRadians(30); // R/S^2
+  private final double kAllowedClosedLoopError = 0.35; // Radians (about 2 degrees)
 
   private final TrapezoidProfile m_profile =
       new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration));
@@ -151,12 +151,12 @@ public class ArmSubsystem extends SubsystemBase {
     m_MotorConfig.absoluteEncoder.velocityConversionFactor(kVelocityConversionRatioAbsolute);
 
     // PID coefficients
-    kP = 0.0;
+    kP = 0.65298;
     kI = 0;
-    kD = 0;
+    kD = 0.11024;
     kIz = 0;
-    kMaxOutput = 0.8;
-    kMinOutput = -0.8;
+    kMaxOutput = 0.5;
+    kMinOutput = -0.5;
     // set PID coefficients
     m_MotorConfig.closedLoop.pid(kP, kI, kD, DriveConstants.kDrivetrainPositionPIDSlot);
     m_MotorConfig.closedLoop.iZone(kIz, DriveConstants.kDrivetrainPositionPIDSlot);
