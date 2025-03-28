@@ -94,7 +94,7 @@ public class ArmSubsystem extends SubsystemBase {
   private final SysIdRoutine m_sysIdRoutine;
 
   // current limit
-  private final int k_CurrentLimit = 60;
+  private final int k_CurrentLimit = 40;
 
   // Requested Angle
   private double m_requestedAngle = 0;
@@ -236,9 +236,9 @@ public class ArmSubsystem extends SubsystemBase {
     Logger.recordOutput("ArmRequestedAngle", m_requestedAngle);
     Logger.recordOutput("ArmRequestedAngleDegrees", Units.radiansToDegrees(m_requestedAngle));
     Logger.recordOutput(
-        "ArmRelativeEncoderDegrees", Units.rotationsToDegrees(m_ArmEncoder.getPosition()));
+        "ArmRelativeEncoderDegrees", Units.radiansToDegrees(m_ArmEncoder.getPosition()));
     Logger.recordOutput(
-        "ArmAbsoluteEnoderDegrees", Units.rotationsToDegrees(m_ArmAbsoluteEncoder.getPosition()));
+        "ArmAbsoluteEnoderDegrees", Units.radiansToDegrees(m_ArmAbsoluteEncoder.getPosition()));
     m_setpoint = m_profile.calculate(0.02, m_setpoint, m_goal);
     if (m_PIDEnabled) {
       m_ArmMainPIDController.setReference(
