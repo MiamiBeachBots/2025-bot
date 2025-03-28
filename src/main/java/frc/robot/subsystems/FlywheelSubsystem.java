@@ -96,6 +96,9 @@ public class FlywheelSubsystem extends SubsystemBase {
     m_MainConfig.idleMode(IdleMode.kBrake);
     m_SecondaryConfig.idleMode(IdleMode.kBrake);
 
+    // Invert main motor
+    m_MainConfig.inverted(true);
+
     // set current limit
     m_MainConfig.smartCurrentLimit(k_CurrentLimit);
     m_SecondaryConfig.smartCurrentLimit(k_CurrentLimit);
