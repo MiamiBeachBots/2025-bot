@@ -57,6 +57,9 @@ public class CameraSubsystem extends SubsystemBase {
   private PhotonCameraSim poseCamera2Sim;
   private PhotonCameraSim targetingCamera1Sim;
 
+  private boolean multiModeUsed = false;
+  private static final boolean cameraPoseEnabled = false;
+
   /** Creates a new CameraSubsystem. */
   public CameraSubsystem(DriveSubsystem d_subsystem) {
     m_driveSubsystem = d_subsystem;
@@ -147,14 +150,28 @@ public class CameraSubsystem extends SubsystemBase {
    * @param camera Pose Camera
    * @param poseEstimator Pose estimator
    */
-  private void updateGlobalPose(PhotonCamera camera, PhotonPoseEstimator poseEstimator) {
-    for (var result : camera.getAllUnreadResults()) {
-      Optional<EstimatedRobotPose> curPose = poseEstimator.update(result);
-      if (curPose.isPresent()) {
-        m_driveSubsystem.updateVisionPose(
-            curPose.get().estimatedPose.toPose2d(), curPose.get().timestampSeconds);
+  private void updateGlobalPose(
+      PhotonCamera camera, PhotonPoseEstimator poseEstimator, String cameraName) {
+    for (var result : camera.getAllUnreadResults())
+      if (result.hasTargets() && result.getBestTarget().getPoseAmbiguity() < 0.025) {
+        Optional<EstimatedRobotPose> curPose = poseEstimator.update(result);
+        if (curPose.isPresent()) {
+          if (!multiModeUsed
+              || curPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
+            m_driveSubsystem.updateVisionPose(
+                curPose.get().estimatedPose.toPose2d(),
+                curPose.get().timestampSeconds,
+                cameraName,
+                cameraPoseEnabled);
+            if (curPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
+              multiModeUsed = true;
+              poseCamera1PoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
+              poseCamera2PoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
+          
+            }
+          }
+        }
       }
-    }
   }
 
   @Override
@@ -162,14 +179,18 @@ public class CameraSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
     // update the pipeline result for targeting cameras
     targetingCamera1Result = getPipelineResults(targetingCamera1);
+    // update robot state
+    updateState();
     // update the pose estimators
-    updateGlobalPose(poseCamera1, poseCamera1PoseEstimator);
-    updateGlobalPose(poseCamera2, poseCamera2PoseEstimator);
+    updateGlobalPose(poseCamera1, poseCamera1PoseEstimator, poseCamera1.getName());
+    updateGlobalPose(poseCamera2, poseCamera2PoseEstimator, poseCamera2.getName());
     // Update dashboard
     SmartDashboard.putBoolean("poseCamera1Connected", poseCamera1.isConnected());
     SmartDashboard.putBoolean("poseCamera2Connected", poseCamera2.isConnected());
     SmartDashboard.putBoolean("TargetingCamera1Connnected", targetingCamera1.isConnected());
   }
+
+  private void updateState() {}
 
   @Override
   public void simulationPeriodic() {

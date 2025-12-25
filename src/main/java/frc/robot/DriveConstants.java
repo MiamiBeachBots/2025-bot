@@ -18,7 +18,7 @@ public final class DriveConstants {
   // https://sciencing.com/convert-rpm-linear-speed-8232280.html
   public static final double WHEEL_DIAMETER = Units.inchesToMeters(6); // meters
   public static final double WHEEL_RADIUS = WHEEL_DIAMETER / 2;
-  public static final double kTrackwidthMeters = 0.527; // TODO: Update
+  public static final double kTrackwidthMeters = 0.527;
   // this is not used and is handled by the rev encoder.
   public static final double PULSES_PER_REV = 1;
   public static final double GEAR_RATIO = 8.46; // 8.46:1
@@ -34,23 +34,24 @@ public final class DriveConstants {
   // The Robot Characterization Toolsuite provides a convenient tool for obtaining these
   // values for your robot.
   // Feed Forward Constants
-  public static final double ksDriveVolts = 0.19676;
-  public static final double kvDriveVoltSecondsPerMeter = 2.2623;
-  public static final double kaDriveVoltSecondsSquaredPerMeter = 0.43785;
+  public static final double ksDriveVolts = 0.015014;
+  public static final double kvDriveVoltSecondsPerMeter = 2.4799;
+  public static final double kaDriveVoltSecondsSquaredPerMeter = 0.48513;
+  // For SIM
   public static final double kvDriveVoltSecondsPerMeterAngular = 1.2;
   public static final double kaDriveVoltSecondsSquaredPerMeterAngular = 0.2;
   // Max speed Constants
   public static final double kMaxOutputDrive = 0.8;
   public static final double kMinOutputDrive = -0.8;
   // Feed Back / PID Constants
-  public static final double kPDriveVel = 0.00088622;
+  public static final double kPDriveVel = 0.0025097;
   public static final double kIDriveVel = 0.0;
   public static final double kDDriveVel = 0.0;
   public static final double kIzDriveVel = 0.0; // error before integral takes effect
 
-  public static final double kPDrivePos = 4.6269;
+  public static final double kPDrivePos = 3.2973;
   public static final double kIDrivePos = 0.0;
-  public static final double kDDrivePos = 0.49649;
+  public static final double kDDrivePos = 0.40434;
   public static final double kIzDrivePos = 0.0; // error before integral takes effect
   // Helper class that converts a chassis velocity (dx and dtheta components) to left and right
   // wheel velocities for a differential drive.
@@ -75,10 +76,26 @@ public final class DriveConstants {
 
   public final class OnTheFly {
     // On the fly path planning constants
-    public static final double kMaxVelocity = 3; // m/s
-    public static final double kMaxAcceleration = 3; // m/s^2
-    public static final double kMaxAngularVelocity = 540; // deg/s
-    public static final double kMaxAngularAcceleration = 720; // deg/s^2
+    public static final double kMaxVelocity = 2; // m/s
+    public static final double kMaxAcceleration = 1.5; // m/s^2
+    public static final double kMaxAngularVelocity = 360; // deg/s
+    public static final double kMaxAngularAcceleration = 300; // deg/s^2
+    public static final double kNominalVoltage = 12; // V
+    public static final PathConstraints kPathConstraints =
+        new PathConstraints(
+            kMaxVelocity,
+            kMaxAcceleration,
+            kMaxAngularVelocity,
+            kMaxAngularAcceleration,
+            kNominalVoltage);
+  }
+
+  public final class OnTheFlyReduced {
+    // On the fly path planning constants
+    public static final double kMaxVelocity = 1; // m/s
+    public static final double kMaxAcceleration = 0.5; // m/s^2
+    public static final double kMaxAngularVelocity = 360; // deg/s
+    public static final double kMaxAngularAcceleration = 300; // deg/s^2
     public static final double kNominalVoltage = 12; // V
     public static final PathConstraints kPathConstraints =
         new PathConstraints(

@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.littletonrobotics.junction.Logger;
 
 /*
  * ShooterState.java
@@ -15,49 +16,71 @@ public class ShooterState {
     public final double speed;
     public final double height;
     public final double angle;
+    public final boolean isIntake;
 
     /**
      * @param Name Which preset is it
-     * @param Speed m/s
-     * @param Height inches
-     * @param Angle degrees
+     * @param Speed motor speed
+     * @param Height inches from ground
+     * @param Angle degrees from angle offset (180)
      */
-    public ShooterMode(String Name, double Speed, double Height, double Angle) {
+    public ShooterMode(String Name, double Speed, double Height, double Angle, boolean IsIntake) {
       name = Name;
       speed = Speed;
-      height = Units.inchesToMeters(Height);
-      angle = Units.degreesToRadians(Angle);
+      height = Units.inchesToMeters(Height) - Constants.ELEVATOR_STARTING_HEIGHT;
+      angle = Units.degreesToRadians(Angle) + Constants.ARM_ANGLE_OFFSET;
+      if (height < 0 || angle < 0) {
+        throw new RuntimeException("You Broke the state system -angle or -height");
+      } else if (height > Constants.ELEVATOR_MAX_HEIGHT || angle > Constants.ARM_ANGLE_OFFSET) {
+        throw new RuntimeException("Height and or Angle exceeds soft limits");
+      }
+      isIntake = IsIntake;
     }
   }
 
   // TODO: Numbers
   public static class ShooterModes {
     public static final ShooterMode DEFAULT =
-        new ShooterMode("Default", Constants.MAX_SHOOTER_SPEED, 0, 105);
+        new ShooterMode(
+            "Default",
+            Constants.MAX_SHOOTER_SPEED,
+            Constants.ELEVATOR_STARTING_HEIGHT_INCHES,
+            0,
+            false);
     public static final ShooterMode INTAKE =
-        new ShooterMode("Intake", -Constants.MAX_SHOOTER_SPEED, 0, -30);
+        new ShooterMode(
+            "Intake",
+            -Constants.MAX_SHOOTER_SPEED,
+            Constants.ELEVATOR_STARTING_HEIGHT_INCHES,
+            -100,
+            true);
     public static final ShooterMode PROCESSOR =
-        new ShooterMode("Processor", Constants.MAX_SHOOTER_SPEED * 0.25, 0, -15);
+        new ShooterMode(
+            "Processor",
+            Constants.MAX_SHOOTER_SPEED * 0.4,
+            Constants.ELEVATOR_STARTING_HEIGHT_INCHES + 5,
+            -85,
+            false);
     public static final ShooterMode TROUGH =
-        new ShooterMode("Trough", Constants.MAX_SHOOTER_SPEED, 19, -15);
+        new ShooterMode("Trough", 0.25 * Constants.MAX_SHOOTER_SPEED, 32, -105, false);
     public static final ShooterMode REEFT2 =
-        new ShooterMode("ReefT2", Constants.MAX_SHOOTER_SPEED, 30.41, -30);
+        new ShooterMode("ReefT2", -Constants.MAX_SHOOTER_SPEED, 40 + 12, -125, true);
     public static final ShooterMode REEFT3 =
-        new ShooterMode("ReefT3", Constants.MAX_SHOOTER_SPEED, 46.28, -30);
+        new ShooterMode("ReefT3", -Constants.MAX_SHOOTER_SPEED, 56 + 12, -125, true);
     public static final ShooterMode REEFT4 =
-        new ShooterMode("ReefT4", Constants.MAX_SHOOTER_SPEED, 71.87, -60);
+        new ShooterMode("ReefT4", -Constants.MAX_SHOOTER_SPEED, 72, -125, true);
     public static final ShooterMode BARGE =
-        new ShooterMode("Barge", Constants.MAX_SHOOTER_SPEED * 0.25, 78, 0);
+        new ShooterMode("Barge", Constants.MAX_SHOOTER_SPEED * 0.4, 84, -45, false);
   }
-  ;
 
-  public final boolean isSensing = false;
-  public boolean isLoaded = true;
-  public boolean isLowered = true;
-  public boolean isResting = true;
+  private static final boolean isAssistEnabled = false;
+  public boolean isLoaded = false;
+  public boolean isElevatorLowered = true;
+  public boolean isArmResting = true; // Starting position
   public boolean isShooting = false;
   public boolean axisEnabled = false;
-  public ShooterMode mode = ShooterModes.DEFAULT;
+  private ShooterMode currentMode = ShooterModes.DEFAULT;
+  public ShooterMode queuedMode = ShooterModes.DEFAULT;
 
   public ShooterState() {}
 
@@ -65,12 +88,39 @@ public class ShooterState {
     isLoaded = true;
   }
 
-  public void setMode(ShooterMode newMode) {
-    mode = newMode;
+  public void setUnloaded() {
+    isLoaded = false;
   }
 
-  public void setResting() {
-    isResting = true;
+  public ShooterMode getCurrentMode() {
+    return currentMode;
+  }
+
+  private void setCurrentMode(ShooterMode newMode) {
+    currentMode = newMode;
+  }
+
+  public void setQueuedMode(ShooterMode newMode) {
+    queuedMode = newMode;
+  }
+
+  public void switchModes() {
+    ShooterMode t_current = getCurrentMode();
+    setCurrentMode(queuedMode);
+    setQueuedMode(t_current);
+  }
+
+  private void instantSwitch(ShooterMode requestedMode) {
+    setQueuedMode(currentMode);
+    currentMode = requestedMode;
+  }
+
+  public void defaultOverride() {
+    setCurrentMode(ShooterModes.DEFAULT);
+  }
+
+  public void setArmResting(boolean isResting) {
+    this.isArmResting = isResting;
   }
 
   public void startShooting() {
@@ -79,10 +129,14 @@ public class ShooterState {
 
   public void stopShooting() {
     isShooting = false;
-    if (mode == ShooterModes.INTAKE && isLoaded) {
-      mode = ShooterModes.DEFAULT;
-    } else if (mode != ShooterModes.INTAKE && !isLoaded) {
-      mode = ShooterModes.DEFAULT;
+    if (isAssistEnabled) {
+      // If intaking, and shooter is loaded, go to default
+      if (getCurrentMode().isIntake && isLoaded) {
+        instantSwitch(ShooterModes.DEFAULT);
+        // After we finish shooting, go to default
+      } else if (getCurrentMode().isIntake && !isLoaded) {
+        instantSwitch(ShooterModes.DEFAULT);
+      }
     }
   }
 
@@ -90,27 +144,36 @@ public class ShooterState {
     axisEnabled = !axisEnabled;
   }
 
-  public void setLowered() {
-    isLowered = true;
-    mode = ShooterModes.DEFAULT;
+  public void setElevatorLowered(boolean isElevatorLowered) {
+    this.isElevatorLowered = isElevatorLowered;
   }
 
   public double getShooterSpeed() {
-    return mode.speed;
+    return currentMode.speed;
   }
 
   /**
    * Updates the values on the SmartDashboard related to the shooter state. This method puts the
    * values of various shooter state variables onto the SmartDashboard. The variables include
    * whether the manual arm mode is enabled, the current arm mode, whether the shooter is loaded,
-   * whether the arm is lowered, and whether the arm is shooting.
+   * whether the arm is lowered, and whether the arm is shooting. It also adds things to the logs
    */
-  public void updateDash() {
+  public void StatePeriodic() {
+    // Update SmartDashboard
     SmartDashboard.putBoolean("Manual Arm Mode Enabled", axisEnabled);
-    SmartDashboard.putString("Arm Mode", mode.name);
+    SmartDashboard.putString("Current Mode", currentMode.name);
+    SmartDashboard.putString("Queued Mode", queuedMode.name);
     SmartDashboard.putBoolean("Loaded", isLoaded);
-    SmartDashboard.putBoolean("Lowered", isLowered);
-    SmartDashboard.putBoolean("Resting", isResting);
+    SmartDashboard.putBoolean("Elevator Lowered", isElevatorLowered);
+    SmartDashboard.putBoolean("Resting", isArmResting);
     SmartDashboard.putBoolean("Arm Shooting", isShooting);
+    // Add to log
+    Logger.recordOutput("ArmStateManual", axisEnabled);
+    Logger.recordOutput("ArmStateCurrentMode", currentMode.name);
+    Logger.recordOutput("ArmStateQueuedMode", queuedMode.name);
+    Logger.recordOutput("ArmStateLoaded", isLoaded);
+    Logger.recordOutput("ArmStateResting", isArmResting);
+    Logger.recordOutput("ArmStateShooting", isShooting);
+    Logger.recordOutput("ElevatorStateIsLowered", isElevatorLowered);
   }
 }

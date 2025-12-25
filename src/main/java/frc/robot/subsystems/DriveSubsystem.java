@@ -97,6 +97,9 @@ public class DriveSubsystem extends SubsystemBase {
   private final SparkClosedLoopController m_backLeftPIDController;
   private final SparkClosedLoopController m_backRightPIDController;
 
+  // Pathing Constraints
+  private boolean reduceOnTheFlySpeed;
+
   // Current Idle mode
   private boolean isBrakeMode;
 
@@ -145,7 +148,6 @@ public class DriveSubsystem extends SubsystemBase {
     m_driveTrainSim =
         new DifferentialDrivetrainSim(
             // Create a linear system from our identification gains.
-            // TODO: Update after profiling
             LinearSystemId.identifyDrivetrainSystem(
                 DriveConstants.kvDriveVoltSecondsPerMeter,
                 DriveConstants.kaDriveVoltSecondsSquaredPerMeter,
@@ -264,6 +266,9 @@ public class DriveSubsystem extends SubsystemBase {
         m_backRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     m_frontRight.configure(
         m_frontRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    // Set on the fly pathing constraints
+    reduceOnTheFlySpeed = false;
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -356,17 +361,24 @@ public class DriveSubsystem extends SubsystemBase {
     Pose2d currentPose = getPose();
     // get current angle
     double currentAngle = currentPose.getRotation().getDegrees();
+    // get current direction (velocity)
+    double currentDirection = getSpeeds().vxMetersPerSecond;
+    if (currentDirection < 0) {
+      currentDirection = -1;
+    } else {
+      currentDirection = 1;
+    }
     // calculate wanted pose, add 2 meter to x value of current pose
     List<Pose2d> wantedPoses = new ArrayList<Pose2d>();
     wantedPoses.add(currentPose);
     wantedPoses.add(
         new Pose2d(
-            currentPose.getTranslation().getX() + 5,
+            currentPose.getTranslation().getX() + 5 * currentDirection,
             currentPose.getTranslation().getY(),
             new Rotation2d(currentAngle)));
     wantedPoses.add(
         new Pose2d(
-            currentPose.getTranslation().getX() + 10,
+            currentPose.getTranslation().getX() + 10 * currentDirection,
             currentPose.getTranslation().getY(),
             new Rotation2d(currentAngle)));
     // generate path
@@ -399,12 +411,18 @@ public class DriveSubsystem extends SubsystemBase {
     PathPlannerPath path =
         new PathPlannerPath(
             waypoints,
-            DriveConstants.OnTheFly.kPathConstraints,
+            (reduceOnTheFlySpeed)
+                ? DriveConstants.OnTheFlyReduced.kPathConstraints
+                : DriveConstants.OnTheFly.kPathConstraints,
             new IdealStartingState(0, desiredPoses.get(0).getRotation()),
             new GoalEndState(0, desiredPoses.get(desiredPoses.size() - 1).getRotation()));
     // Disables the path being mirrored based on which alliance we are on
     path.preventFlipping = true;
     return path;
+  }
+
+  public void setReducedSpeed(boolean reduceOnTheFlySpeed) {
+    this.reduceOnTheFlySpeed = reduceOnTheFlySpeed;
   }
 
   /**
@@ -466,8 +484,12 @@ public class DriveSubsystem extends SubsystemBase {
     return m_driveOdometry.getEstimatedPosition();
   }
 
-  public void updateVisionPose(Pose2d visionRobotPose, double timestamp) {
-    m_driveOdometry.addVisionMeasurement(visionRobotPose, timestamp);
+  public void updateVisionPose(
+      Pose2d visionRobotPose, double timestamp, String cameraName, boolean cameraEnabled) {
+    if (cameraEnabled) {
+      m_driveOdometry.addVisionMeasurement(visionRobotPose, timestamp);
+    }
+    Logger.recordOutput("PoseCamera" + cameraName, visionRobotPose);
   }
 
   public void resetEncoders() {
@@ -582,18 +604,13 @@ public class DriveSubsystem extends SubsystemBase {
       gyroZeroPending = false;
     }
     // This method will be called once per scheduler run
-    DifferentialDriveWheelSpeeds wheelSpeeds = this.getWheelSpeeds();
-    SmartDashboard.putNumber("Left Encoder Speed (M/s)", wheelSpeeds.leftMetersPerSecond);
-    SmartDashboard.putNumber("Right Encoder Speed (M/s)", wheelSpeeds.rightMetersPerSecond);
-    SmartDashboard.putNumber("Distance L", this.getPositionLeft());
-    SmartDashboard.putNumber("Distance R", this.getPositionRight());
     SmartDashboard.putNumber("Average Distance Traveled", currentDistance());
-    SmartDashboard.putNumber("Current Gyro Pitch", getPitch());
     SmartDashboard.putNumber("Current Gyro Yaw", getYaw());
     SmartDashboard.putBoolean("Gyro Calibrating", m_Gyro.isCalibrating());
     // Update the odometry in the periodic block
     m_driveOdometry.update(getRotation2d(), getPositionLeft(), getPositionRight());
     field.setRobotPose(getPose());
+    Logger.recordOutput("RobotPose", getPose());
     Logger.recordOutput("DriveLeftMotorPositionRotations", m_encoderBackLeft.getPosition());
     Logger.recordOutput("DriveRightMotorPositionRotations", m_encoderBackRight.getPosition());
     Logger.recordOutput("DriveLeftMotorVelocityRPM", m_encoderBackLeft.getVelocity());

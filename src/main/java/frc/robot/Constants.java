@@ -57,12 +57,19 @@ public final class Constants {
   }
 
   // Max speeds
-  public static final double MAX_SPEED = 0.8;
-  public static final double MAX_SHOOTER_SPEED = 0.8;
+  public static final double MAX_SPEED = 0.75;
+  public static final double MAX_EXTENDED_SPEED = 0.5;
+  public static final double MAX_SHOOTER_SPEED = 0.9;
   public static final double LIFTER_SPEED = 0.5;
 
-  public static final double ARM_ANGLE_OFFSET = Units.degreesToRadians(105);
-  public static final double ELEVATOR_OFFSET = Units.inchesToMeters(5);
+  public static final double ARM_ANGLE_OFFSET = Units.degreesToRadians(180); // Also max angle
+  public static final double ELEVATOR_STARTING_HEIGHT_INCHES = 13;
+  public static final double ELEVATOR_STARTING_HEIGHT =
+      Units.inchesToMeters(ELEVATOR_STARTING_HEIGHT_INCHES);
+  public static final double ELEVATOR_MAX_HEIGHT = 1.88; // METERS
+  // Radians (based on sensor) (starting angle straight down)
+  public static final double ARM_START_OFFSET = 0.2799;
+  public static final double ARM_ZERO_ENCODER_OFFSET = 0.5872441; // Touching frame
 
   // USB Devices
   public static final int CONTROLLER_USB_INDEX = 0;
@@ -76,13 +83,14 @@ public final class Constants {
   // Joystick buttons
   public static final int TRIGGER = 1;
   public static final int DEFAULT_BUTTON = 2;
-  public static final int TROUGH_BUTTON = 8;
-  public static final int REEFT2_BUTTON = 7;
+  public static final int PROCESSOR_BUTTON = 3;
+  public static final int SWITCH_QUEUED_2 = 4;
+  public static final int TROUGH_BUTTON = 7;
+  public static final int REEFT2_BUTTON = 8;
   public static final int REEFT3_BUTTON = 9;
-  public static final int REEFT4_BUTTON = 11;
-  public static final int BARGE_BUTTON = 10;
-  public static final int INTAKE_BUTTON = 12;
-  public static final int AIM_BUTTON = 3;
+  public static final int REEFT4_BUTTON = 10;
+  public static final int BARGE_BUTTON = 12;
+  public static final int INTAKE_BUTTON = 11;
 
   // Analog Ports
   /// Ultrasonic Sensors and ports.
@@ -96,13 +104,13 @@ public final class Constants {
   public static final class PoseCamera1 {
     public static final String NAME = "Pose1";
     // XYZ
-    private static final double X_LOCATION = Units.inchesToMeters(6);
-    private static final double Y_LOCATION = Units.inchesToMeters(9.3);
-    private static final double Z_LOCATION = Units.inchesToMeters(10.5);
+    public static final double X_LOCATION = Units.inchesToMeters(2); // 2 inches in front of center
+    public static final double Y_LOCATION = Units.inchesToMeters(10.25); // 10.25 inches to the left
+    public static final double Z_LOCATION = Units.inchesToMeters(33.875); // 33.8 up
     // ROTATION
-    public static final double ROLL = Units.degreesToRadians(90);
+    public static final double ROLL = Units.degreesToRadians(0);
     public static final double PITCH = Units.degreesToRadians(0.0);
-    public static final double YAW = Units.degreesToRadians(0);
+    public static final double YAW = Units.degreesToRadians(-175);
 
     public static final Transform3d LOCATION =
         new Transform3d(
@@ -113,13 +121,15 @@ public final class Constants {
   public static final class PoseCamera2 {
     public static final String NAME = "Pose2";
     // XYZ
-    private static final double X_Location = Units.inchesToMeters(6);
-    private static final double Y_Location = Units.inchesToMeters(9.3);
-    private static final double Z_Location = Units.inchesToMeters(10.5);
+    public static final double X_Location =
+        Units.inchesToMeters(4.75); // 4.75 inches in front of center
+    public static final double Y_Location =
+        Units.inchesToMeters(-9); // 9 inches to the right of center
+    public static final double Z_Location = Units.inchesToMeters(33.25); // 33.25 up
     // ROTATION
-    public static final double ROLL = Units.degreesToRadians(90);
+    public static final double ROLL = Units.degreesToRadians(0);
     public static final double PITCH = Units.degreesToRadians(0.0);
-    public static final double YAW = Units.degreesToRadians(0);
+    public static final double YAW = Units.degreesToRadians(4);
 
     public static final Transform3d location =
         new Transform3d(
@@ -130,17 +140,33 @@ public final class Constants {
   public static final class TargetingCamera1 {
     public static final String NAME = "Targeting1";
     // XYZ
-    private static final double X_LOCATION = Units.inchesToMeters(6);
-    private static final double Y_LOCATION = Units.inchesToMeters(9.3);
-    private static final double Z_LOCATION = Units.inchesToMeters(10.5);
+    public static final double X_LOCATION = Units.inchesToMeters(13.5);
+    public static final double Y_LOCATION = Units.inchesToMeters(1);
+    public static final double Z_LOCATION = Units.inchesToMeters(12.5);
     // ROTATION
-    public static final double ROLL = Units.degreesToRadians(90);
+    public static final double ROLL = Units.degreesToRadians(0);
     public static final double PITCH = Units.degreesToRadians(0.0);
     public static final double YAW = Units.degreesToRadians(0);
 
     public static final Transform3d location =
         new Transform3d(
             new Translation3d(X_LOCATION, Y_LOCATION, Z_LOCATION),
+            new Rotation3d(ROLL, PITCH, YAW));
+  }
+
+  public static final class AlgaeCamOffset {
+    // XYZ, should be measured from center
+    public static final double X_Location = Units.inchesToMeters(12);
+    public static final double Y_Location = Units.inchesToMeters(0);
+    public static final double Z_Location = Units.inchesToMeters(0);
+    // ROTATION
+    public static final double ROLL = Units.degreesToRadians(0);
+    public static final double PITCH = Units.degreesToRadians(0.0);
+    public static final double YAW = Units.degreesToRadians(0);
+
+    public static final Transform3d location =
+        new Transform3d(
+            new Translation3d(X_Location, Y_Location, Z_Location),
             new Rotation3d(ROLL, PITCH, YAW));
   }
 }

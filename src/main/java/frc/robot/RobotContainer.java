@@ -31,7 +31,6 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.FlywheelSubsystem;
 // import frc.robot.subsystems.LifterSubsystem;
-import frc.robot.subsystems.UltrasonicSubsystem;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -53,8 +52,8 @@ public class RobotContainer {
   // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
   // Init Gyro & ultrasonic
-  private final UltrasonicSubsystem m_ultrasonicShooterSubsystem =
-      new UltrasonicSubsystem(Constants.ULTRASONIC_SHOOTER_PORT);
+  // private final UltrasonicSubsystem m_ultrasonicShooterSubsystem =
+  //    new UltrasonicSubsystem(Constants.ULTRASONIC_SHOOTER_PORT); // TODO: Color sensor
 
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   private final CameraSubsystem m_cameraSubsystem = new CameraSubsystem(m_driveSubsystem);
@@ -68,9 +67,11 @@ public class RobotContainer {
   // The robots commands are defined here..
   // private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
 
-  private final AimCommand m_aimCommand = new AimCommand(m_driveSubsystem, m_cameraSubsystem);
+  private final AimCommand m_aimCommand =
+      new AimCommand(m_driveSubsystem, m_cameraSubsystem, m_shooterState);
   private final DefaultDrive m_defaultDrive =
-      new DefaultDrive(m_driveSubsystem, this::getControllerLeftY, this::getControllerRightY);
+      new DefaultDrive(
+          m_driveSubsystem, m_shooterState, this::getControllerLeftY, this::getControllerRightY);
   private final StraightCommand m_straightCommand = new StraightCommand(m_driveSubsystem);
   private final FlywheelCommand m_shooterCommand =
       new FlywheelCommand(m_shooterSubsytem, m_shooterState);
@@ -89,14 +90,18 @@ public class RobotContainer {
   // Init Buttons
   // private Trigger m_balanceButton;
   private Trigger m_straightButton;
+  private Trigger m_resetElevatorEncoders;
   private Trigger m_toggleBrakeButton;
-  private Trigger m_lifterRightButton;
-  private Trigger m_lifterLeftButton;
+  private Trigger m_aimButton;
+  private Trigger m_switchQueuedButton;
+  private Trigger m_defaultButton_driver;
+  // private Trigger m_lifterRightButton;
+  // private Trigger m_lifterLeftButton;
   // private Trigger m_driveToAmpButton;
-  private Trigger m_lifterDirectionButton;
+  // private Trigger m_lifterDirectionButton;
   // joystick buttons
-  private JoystickButton m_aimButton;
   private JoystickButton m_defaultButton;
+  private JoystickButton m_switchQueued2;
   private JoystickButton m_troughButton;
   private JoystickButton m_bargeButton;
   private JoystickButton m_intakeButton;
@@ -104,6 +109,7 @@ public class RobotContainer {
   private JoystickButton m_reefT2Button;
   private JoystickButton m_reefT3Button;
   private JoystickButton m_reefT4Button;
+  private JoystickButton m_processorButton;
   // Init For Autonomous
   private LoggedDashboardChooser<String> autoDashboardChooser =
       new LoggedDashboardChooser<String>("AutoMode");
@@ -121,8 +127,8 @@ public class RobotContainer {
     // Bind the commands to the triggers
     if (enableAutoProfiling) {
       // bindDriveSysIDCommands();
-      // bindArmSysIDCommands();
-      bindElevatorSysIDCommands();
+      bindArmSysIDCommands();
+      // bindElevatorSysIDCommands();
     } else {
       bindCommands();
     }
@@ -143,22 +149,23 @@ public class RobotContainer {
    */
   private void setupTriggers() {
     // Controller buttons
-    m_toggleBrakeButton = m_controller1.x();
-    m_straightButton = m_controller1.rightBumper();
-    m_lifterRightButton = m_controller1.rightTrigger();
-    m_lifterLeftButton = m_controller1.leftTrigger();
-    // m_driveToAmpButton= m_controller1.y();
-    m_lifterDirectionButton = m_controller1.a();
+    m_toggleBrakeButton = m_controller1.b();
+    m_resetElevatorEncoders = m_controller1.leftTrigger();
+    m_straightButton = m_controller1.leftBumper();
+    m_aimButton = m_controller1.rightBumper();
+    m_switchQueuedButton = m_controller1.y();
+    m_defaultButton_driver = m_controller1.a();
 
     // Joystick buttons
     m_defaultButton = new JoystickButton(m_flightStick, Constants.DEFAULT_BUTTON);
     m_troughButton = new JoystickButton(m_flightStick, Constants.TROUGH_BUTTON);
     m_bargeButton = new JoystickButton(m_flightStick, Constants.BARGE_BUTTON);
+    m_processorButton = new JoystickButton(m_flightStick, Constants.PROCESSOR_BUTTON);
     m_intakeButton = new JoystickButton(m_flightStick, Constants.INTAKE_BUTTON);
     m_reefT2Button = new JoystickButton(m_flightStick, Constants.REEFT2_BUTTON);
     m_reefT3Button = new JoystickButton(m_flightStick, Constants.REEFT3_BUTTON);
     m_reefT4Button = new JoystickButton(m_flightStick, Constants.REEFT4_BUTTON);
-    m_aimButton = new JoystickButton(m_flightStick, Constants.AIM_BUTTON);
+    m_switchQueued2 = new JoystickButton(m_flightStick, Constants.SWITCH_QUEUED_2);
 
     // load and shoot buttons
     m_shooterTrigger = new JoystickButton(m_flightStick, Constants.TRIGGER);
@@ -166,25 +173,30 @@ public class RobotContainer {
 
   private void bindCommands() {
     // commands
-    // m_balanceButton.whileTrue(m_balanceCommand);
     m_straightButton.whileTrue(m_straightCommand);
+    m_resetElevatorEncoders.whileTrue(new InstantCommand(() -> m_ElevatorSubsystem.ResetEncoders()));
+    m_switchQueuedButton.whileTrue(new InstantCommand(() -> m_shooterState.switchModes()));
     m_defaultButton.whileTrue(
-        new InstantCommand(() -> m_shooterState.setMode(ShooterModes.DEFAULT)));
-    m_troughButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.TROUGH)));
-    m_bargeButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.BARGE)));
-    m_intakeButton.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.INTAKE)));
-    m_reefT2Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT2)));
-    m_reefT3Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT3)));
-    m_reefT4Button.whileTrue(new InstantCommand(() -> m_shooterState.setMode(ShooterModes.REEFT4)));
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.DEFAULT)));
+    m_defaultButton_driver.whileTrue(new InstantCommand(() -> m_shooterState.defaultOverride()));
+    m_switchQueued2.whileTrue(new InstantCommand(() -> m_shooterState.switchModes()));
+    m_troughButton.whileTrue(
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.TROUGH)));
+    m_bargeButton.whileTrue(
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.BARGE)));
+    m_processorButton.whileTrue(
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.PROCESSOR)));
+    m_intakeButton.whileTrue(
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.INTAKE)));
+    m_reefT2Button.whileTrue(
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.REEFT2)));
+    m_reefT3Button.whileTrue(
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.REEFT3)));
+    //  m_reefT4Button.whileTrue(
+    //      new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.REEFT4)));
 
     m_aimButton.whileTrue(m_aimCommand);
 
-    // m_driveToAmpButton.whileTrue(m_driveToAmp); // TODO: Need to bind button
-    // m_lifterRightButton.whileTrue(m_RightLifterCommand);
-    // m_lifterLeftButton.whileTrue(m_LeftLifterCommand);
-    // m_lifterDirectionButton.whileTrue(
-    //    new InstantCommand(() -> m_leftLifterSubsystem.changeDirection())
-    //        .andThen(new InstantCommand(() -> m_rightLifterSubsystem.changeDirection())));
     m_toggleBrakeButton.whileTrue(new InstantCommand(() -> m_driveSubsystem.SwitchBrakemode()));
     // shooter + arm commands
     m_shooterTrigger.whileTrue(m_shooterCommand);
@@ -208,6 +220,7 @@ public class RobotContainer {
     m_controller1.x().whileTrue(m_ElevatorSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
     m_controller1.y().whileTrue(m_ElevatorSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
+    m_ElevatorSubsystem.disablePID();
   }
 
   private void bindArmSysIDCommands() {
@@ -216,12 +229,15 @@ public class RobotContainer {
     m_controller1.x().whileTrue(m_ArmSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
     m_controller1.y().whileTrue(m_ArmSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     m_controller1.leftTrigger().whileTrue(new InstantCommand(() -> DataLogManager.stop()));
+    m_ArmSubsystem.disablePID();
   }
 
   private void initializeAutonomous() {
     // Network Table Routine Options
-    autoDashboardChooser.addDefaultOption("SFR", "SFR");
-    autoDashboardChooser.addOption("DriveForward", "DriveForward");
+    autoDashboardChooser.addDefaultOption("ReefCenter", "ReefCenter");
+    autoDashboardChooser.addOption("ReefLeft", "ReefLeft");
+    autoDashboardChooser.addOption("ReefRight", "ReefRight");
+    autoDashboardChooser.addOption("DriveStraight", "DriveStraight");
     autoDashboardChooser.addOption("Do Nothing", "DoNothing");
     SmartDashboard.putData(autoDashboardChooser.getSendableChooser());
 
@@ -232,8 +248,21 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "BrakeCommand", new InstantCommand(() -> m_driveSubsystem.SetBrakemode()));
     NamedCommands.registerCommand("ShooterCommand", m_shooterCommand);
-    // NamedCommands.registerCommand("AimAmpCommand", m_AimAmpCommand);
-
+    NamedCommands.registerCommand("AimCommand", m_aimCommand);
+    NamedCommands.registerCommand(
+        "IntakeCommand",
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.INTAKE)));
+    NamedCommands.registerCommand(
+        "BargeCommand", new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.BARGE)));
+    NamedCommands.registerCommand(
+        "T2Command", new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.REEFT2)));
+    NamedCommands.registerCommand(
+        "T3Command", new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.REEFT3)));
+    NamedCommands.registerCommand(
+        "TroughCommand",
+        new InstantCommand(() -> m_shooterState.setQueuedMode(ShooterModes.TROUGH)));
+    NamedCommands.registerCommand(
+        "SwitchQueuedCommand", new InstantCommand(() -> m_shooterState.switchModes()));
   }
 
   private void configureTeleopPaths() {
@@ -281,5 +310,10 @@ public class RobotContainer {
     // subsystem.
     String autoName = autoDashboardChooser.get();
     return new PathPlannerAuto(autoName);
+  }
+
+  public void periodic() {
+    // This method will be called once per scheduler run (Only for inter subsystem state updating)
+    m_shooterState.StatePeriodic();
   }
 }

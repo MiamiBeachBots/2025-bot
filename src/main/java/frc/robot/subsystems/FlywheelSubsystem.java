@@ -50,7 +50,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   // https://www.chiefdelphi.com/t/encoders-velocity-to-m-s/390332/2
   // https://sciencing.com/convert-rpm-linear-speed-8232280.html
   private final double kWheelDiameter = Units.inchesToMeters(3); // meters
-  private final double kGearRatio = 1; // TBD
+  private final double kGearRatio = 4; // TBD
   // basically converted from rotations to to radians to then meters using the wheel diameter.
   // the diameter is already *2 so we don't need to multiply by 2 again.
   private final double kPositionConversionRatio = (Math.PI * kWheelDiameter) / kGearRatio;
@@ -69,7 +69,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   private final SysIdRoutine m_sysIdRoutine;
 
   // current limit
-  private final int k_CurrentLimit = 80;
+  private final int k_CurrentLimit = 60;
 
   /** Creates a new ShooterSubsystem. */
   public FlywheelSubsystem() {
@@ -95,6 +95,9 @@ public class FlywheelSubsystem extends SubsystemBase {
     // set the idle mode to coast
     m_MainConfig.idleMode(IdleMode.kBrake);
     m_SecondaryConfig.idleMode(IdleMode.kBrake);
+
+    // Invert main motor
+    m_MainConfig.inverted(true);
 
     // set current limit
     m_MainConfig.smartCurrentLimit(k_CurrentLimit);

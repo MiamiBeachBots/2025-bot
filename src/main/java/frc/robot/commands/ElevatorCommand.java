@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.ShooterState;
+import frc.robot.ShooterState.ShooterModes;
 import frc.robot.subsystems.ElevatorSubsystem;
 
 /** An elevator command that uses the elevator subsystem. */
@@ -22,6 +23,14 @@ public class ElevatorCommand extends Command {
     addRequirements(e_Subsystem);
   }
 
+  public void updateStates() {
+    // Update lowered state of the elevator
+    // if the elevator is at the goal and the elevator is completely lowered, set lowered to true.
+    m_ShooterState.setElevatorLowered(
+        m_ElevatorSubsystem.atGoal()
+            && m_ShooterState.getCurrentMode().height == ShooterModes.DEFAULT.height);
+  }
+
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {}
@@ -29,7 +38,8 @@ public class ElevatorCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_ElevatorSubsystem.SetHeight(m_ShooterState.mode.height);
+    m_ElevatorSubsystem.SetHeight(m_ShooterState.getCurrentMode().height);
+    updateStates();
   }
 
   // Called once the command ends or is interrupted.
